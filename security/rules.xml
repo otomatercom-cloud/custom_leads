@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="0">
+        <record id="rules_for_tele_callers_own_documents" model="ir.rule">
+            <field name="name">Tele Caller Own Lead</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">[('tele_caller_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_tele_callers'))]"/>
+        </record>
+        <!-- Admission Officer: read own leads (assigned/created/followed-up) OR own admissions only -->
+        <record id="rules_for_admission_officer_own_documents" model="ir.rule">
+            <field name="name">Admission Officer Leads (Read)</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">['|', '|', '|',
+                ('lead_owner', '=', user.employee_id.id),
+                ('tele_caller_id', '=', user.id),
+                ('create_uid', '=', user.id),
+                ('followup_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_users'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="rules_for_admission_officer_own_documents_write" model="ir.rule">
+            <field name="name">Admission Officer Leads (Write/Create/Delete)</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">['|', '|', '|', ('lead_owner', '=', user.employee_id.id), ('tele_caller_id', '=', user.id), ('create_uid', '=', user.id), ('followup_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_users'))]"/>
+            <field name="perm_read" eval="0"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="rules_for_admission_officer_own_followups" model="ir.rule">
+    <field name="name">Admission Officer Own Follow-Ups</field>
+    <field name="model_id" ref="custom_leads.model_lead_followup"/>
+    <field name="domain_force">['|', '|', ('lead_id.lead_owner', '=', user.employee_id.id), ('user_id', '=', user.id), ('create_uid', '=', user.id)]</field>
+    <field name="groups" eval="[(4, ref('custom_leads.group_lead_users'))]"/>
+</record>
+        <record id="rules_for_digital_lead_own_documents" model="ir.rule">
+            <field name="name">Digital Leads</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">['|',('lead_owner', '=', user.employee_id.id),('create_uid','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_digital_team'))]"/>
+        </record>
+
+        <record id="rules_for_digital_head_all_leads" model="ir.rule">
+    <field name="name">Digital Head Leads</field>
+    <field name="model_id" ref="custom_leads.model_leads_logic"/>
+    <field name="domain_force">[(1, '=', 1)]</field>
+    <field name="groups" eval="[(4, ref('custom_leads.group_lead_digital_head'))]"/>
+</record>
+
+        <record id="rules_for_branch_head_all_leads" model="ir.rule">
+            <field name="name">Branch Head Leads</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_branch_head'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+
+        <record id="rules_for_admission_team_student_rules" model="ir.rule">
+            <field name="name">Student Profile Rules</field>
+            <field name="model_id" ref="openeducat_core.model_op_student"/>
+            <field name="domain_force">['|',('create_uid','=',user.id),('admission_officer_id','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_users'))]"/>
+        </record>
+
+        <record id="rules_for_crash_head" model="ir.rule">
+            <field name="name">Crash Leads</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">['|','|',('create_uid','=',user.id), ('lead_quality','in', ['crash_lead','bad_lead']),
+                ('crash_lead','=', True)]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_crash_head'))]"/>
+        </record>
+        <record id="rules_for_crash_user" model="ir.rule">
+            <field name="name">Crash Users Leads Rule</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">['|',('create_uid','=',user.id),('lead_owner', '=', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_crash_user'))]"/>
+        </record>
+        <record model="ir.rule" id="view_students_rule_admission_team">
+            <field name="name">View Students Admission Team Members</field>
+            <field name="model_id" ref="model_op_student"/>
+            <field name="domain_force">['|',('create_uid.id', '=', user.id),('admission_officer_id.id', '=', user.id)]
+            </field>
+            <field name="groups" eval="[(4, ref('openeducat_core.group_op_admission_team'))]"/>
+        </record>
+        <record id="rules_for_super_admin_all_leads" model="ir.rule">
+            <field name="name">Super Admin All Leads</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_super_admin'))]"/>
+        </record>
+
+        <!-- Team Lead: can only see/manage leads owned by Admission Officers in their own team(s) -->
+        <record id="rules_for_team_lead_own_team_leads" model="ir.rule">
+            <field name="name">Team Lead - Own Team's Leads</field>
+            <field name="model_id" ref="custom_leads.model_leads_logic"/>
+            <field name="domain_force">[('lead_owner.admission_team_id.team_lead_ids', 'in', [user.id])]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_team_lead'))]"/>
+        </record>
+
+        <!-- Lead Team visibility: Team Leads only see the team(s) they lead -->
+        <record id="rules_for_team_lead_own_teams" model="ir.rule">
+            <field name="name">Team Lead - Own Teams</field>
+            <field name="model_id" ref="custom_leads.model_lead_team"/>
+            <field name="domain_force">[('team_lead_ids', 'in', [user.id])]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_team_lead'))]"/>
+        </record>
+
+        <!-- Lead Team visibility: Admission Officers only see their own team (read only) -->
+        <record id="rules_for_admo_own_team" model="ir.rule">
+            <field name="name">Admission Officer - Own Team</field>
+            <field name="model_id" ref="custom_leads.model_lead_team"/>
+            <field name="domain_force">[('member_ids', 'in', [user.id])]</field>
+            <field name="groups" eval="[(4, ref('custom_leads.group_lead_users'))]"/>
+        </record>
+
+<record id="rules_for_manager_all_leads" model="ir.rule">
+    <field name="name">Manager All Leads</field>
+    <field name="model_id" ref="custom_leads.model_leads_logic"/>
+    <field name="domain_force">[(1, '=', 1)]</field>
+    <field name="groups" eval="[(4, ref('custom_leads.group_lead_manager'))]"/>
+</record>
+	
+    </data>
+
+
+</odoo>

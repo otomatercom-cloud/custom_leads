@@ -1,0 +1,22 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+# Re-Enquiry — Team Lead: full CRUD + review rights
+access_re_enquiry_team_lead,re.enquiry.team_lead,model_lead_re_enquiry,custom_leads.group_lead_team_lead,1,1,1,1
+
+# Re-Enquiry — Manager: full CRUD
+access_re_enquiry_manager,re.enquiry.manager,model_lead_re_enquiry,custom_leads.group_lead_manager,1,1,1,1
+
+# Re-Enquiry — Super Admin: full CRUD
+access_re_enquiry_super_admin,re.enquiry.super_admin,model_lead_re_enquiry,custom_leads.group_super_admin,1,1,1,1
+
+# Re-Enquiry — Admission Officers: read-only (can see re-enquiries on their lead)
+access_re_enquiry_admo,re.enquiry.admo,model_lead_re_enquiry,custom_leads.group_lead_users,1,0,1,0
+
+# Re-Enquiry — Digital Team: read + create (they typically submit new leads)
+access_re_enquiry_digital_team,re.enquiry.digital_team,model_lead_re_enquiry,custom_leads.group_lead_digital_team,1,0,1,0
+
+# Re-Enquiry — Digital Head: read + create
+access_re_enquiry_digital_head,re.enquiry.digital_head,model_lead_re_enquiry,custom_leads.group_lead_digital_head,1,1,1,0
+
+# Re-Enquiry — Tele Callers: read-only
+access_re_enquiry_tele_callers,re.enquiry.tele_callers,model_lead_re_enquiry,custom_leads.group_lead_tele_callers,1,0,0,0

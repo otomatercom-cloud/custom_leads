@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lead_source_campaign_bulk_wizard_form" model="ir.ui.view">
+        <field name="name">lead.source.campaign.bulk.wizard.form</field>
+        <field name="model">lead.source.campaign.bulk.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Change Source Campaign">
+                <group>
+                    <field name="lead_count" readonly="1"/>
+                    <field name="source_campaign_id"/>
+                    <field name="note" readonly="1" nolabel="1" colspan="2"
+                           class="text-muted"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply to Selected Leads"
+                            class="btn-primary"
+                            confirm="This changes the Source Campaign (and Leads Source) for all selected leads. Continue?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lead_source_campaign_bulk_wizard" model="ir.actions.act_window">
+        <field name="name">Bulk Change Source Campaign</field>
+        <field name="res_model">lead.source.campaign.bulk.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Bulk action available from the Leads list view (select multiple rows).
+         Super Admin only. -->
+    <record id="action_server_bulk_change_source_campaign" model="ir.actions.server">
+        <field name="name">Bulk Change Source Campaign (Super Admin)</field>
+        <field name="model_id" ref="model_leads_logic"/>
+        <field name="binding_model_id" ref="model_leads_logic"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('custom_leads.group_super_admin'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Bulk Change Source Campaign',
+        'res_model': 'lead.source.campaign.bulk.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {'active_model': 'leads.logic', 'active_ids': records.ids},
+    }
+        </field>
+    </record>
+
+</odoo>

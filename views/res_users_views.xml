@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_inherit_voxbay" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.voxbay</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Voxbay Config" name="voxbay_config">
+                    <group>
+                        <field name="voxbay_user_no"/>
+                    </group>
+                </page>
+                <page string="Bourn Voice Config" name="bonvoice_config">
+                    <group>
+                        <field name="bonvoice_agent_number"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

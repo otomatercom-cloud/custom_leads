@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Odoo View Definition for Whatsapp Message Form -->
+    <record id="lead_connection_form_view" model="ir.ui.view">
+        <field name="name">lead.connection.view.form</field>
+        <field name="model">connect.form</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Connection Form">
+                <notebook>
+                    <page string="Fields" name="fields">
+                        <group>
+                            <field name="lead_quality"/>
+                            <field name="crash_user_id" invisible="lead_quality != 'crash_lead'"/>
+                            <field name="expected_joining_date" invisible="lead_quality not in ['hot','warm']"
+                                   required="lead_quality in ['hot','warm']"/>
+                            <field name="lead_id" invisible="1"/>
+                        </group>
+                    </page>
+                    <page string="Tasks" name="tasks">
+                        <group>
+                            <field name="subject" required="1"/>
+                            <field name="task_owner_id" required="1"/>
+                            <field name="due_date"/>
+                            <field name="status"/>
+                            <field name="priority"/>
+                            <field name="description"/>
+                            <field name="date"/>
+                        </group>
+                    </page>
+                </notebook>
+
+
+                <footer>
+                    <button name="act_connect" string="Connect" type="object" class="oe_highlight"/>
+                    <button name="cancel" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="lead_not_connection_form_view" model="ir.ui.view">
+        <field name="name">lead.not.connection.view.form</field>
+        <field name="model">not.connect.form</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Not Connected">
+                <notebook>
+                    <page string="Fields and Notes" name="fields_and_notes">
+                        <group>
+                            <field name="notes"/>
+                            <field name="lead_id" invisible="1"/>
+
+                        </group>
+                    </page>
+
+                </notebook>
+
+
+                <footer>
+                    <button name="act_done" string="Done" type="object"/>
+                    <button name="cancel" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="lead_not_connection_lost_form_view" model="ir.ui.view">
+        <field name="name">lead.lost.connection.view.form</field>
+        <field name="model">lost.lead.form</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Lost Connection">
+                <notebook>
+                    <page string="Fields and Notes" name="fields_and_notes">
+                        <group>
+                            <field name="lead_id" invisible="1"/>
+                            <field name="reason" required="1"/>
+
+                        </group>
+                    </page>
+
+                </notebook>
+
+
+                <footer>
+                    <button name="act_lost_lead" string="Lost" type="object" class="oe_highlight"/>
+                    <button name="cancel" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

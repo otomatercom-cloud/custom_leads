@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_leads_funnel_wizard_form" model="ir.ui.view">
+        <field name="name">leads.funnel.wizard.form</field>
+        <field name="model">leads.funnel.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Lead Funnel">
+                <group>
+                    <field name="lead_id" readonly="1"/>
+                    <!-- Hidden fields for visibility logic -->
+                    <field name="first_call" invisible="1"/>
+                    <field name="whatsapp_intro" invisible="1"/>
+                    <field name="second_followup" invisible="1"/>
+                    <field name="course_wise_webinar" invisible="1"/>
+                    <field name="testimonials" invisible="1"/>
+                </group>
+                <footer>
+                    <!-- Sequential Buttons -->
+                    <button name="action_first_attempt" string="First Attempt" type="object" class="btn-primary"
+                            invisible="first_call == True"/>
+                    
+                    <button name="action_whatsapp" string="WhatsApp" type="object" class="btn-primary"
+                            invisible="first_call == False or whatsapp_intro == True"/>
+                            
+                    <button name="action_second_followup" string="Second Follow Up" type="object" class="btn-primary"
+                            invisible="whatsapp_intro == False or second_followup == True"/>
+                            
+                    <button name="action_course_wise_webinar" string="Course Wise Webinar" type="object" class="btn-primary"
+                            invisible="second_followup == False or course_wise_webinar == True"/>
+                            
+                    <button name="action_testimonials" string="Testimonials" type="object" class="btn-primary"
+                            invisible="course_wise_webinar == False or testimonials == True"/>
+
+                    <!-- Bypass Button -->
+                    <button name="action_bypass" string="Open Lead" type="object" class="btn-secondary"/>
+                    
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_leads_funnel_wizard" model="ir.actions.act_window">
+        <field name="name">Lead Funnel</field>
+        <field name="res_model">leads.funnel.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

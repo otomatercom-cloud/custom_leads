@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="voxbay_call_wizard_view_form" model="ir.ui.view">
+        <field name="name">voxbay.call.wizard.form</field>
+        <field name="model">voxbay.call.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Voxbay Call Processing">
+                <group>
+                    <field name="lead_id" readonly="1"/>
+                    <field name="phone_number"/>
+                    <field name="api_response"/>
+                    <field name="call_log_id" invisible="1"/>
+                </group>
+                <footer>
+                    <button string="Completed" name="action_completed" type="object" class="btn-success"/>
+                    <button string="Not Answered" name="action_not_answered" type="object" class="btn-warning"/>
+                    <button string="Disconnect" name="action_disconnect" type="object" class="btn-danger"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

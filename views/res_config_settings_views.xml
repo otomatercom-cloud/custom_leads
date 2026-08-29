@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_voxbay" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.voxbay</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Voxbay Integration" string="Voxbay Integration" name="custom_leads">
+                    <block title="Voxbay API Credentials" name="voxbay_api">
+                        <setting id="voxbay_uid_setting" string="Voxbay UID" help="Enter your Voxbay UID">
+                            <field name="voxbay_uid"/>
+                        </setting>
+                        <setting id="voxbay_upin_setting" string="Voxbay UPIN" help="Enter your Voxbay UPIN">
+                            <field name="voxbay_upin"/>
+                        </setting>
+                        <setting id="voxbay_callerid_setting" string="Voxbay Caller ID" help="Enter your Voxbay Caller ID (DID Number)">
+                            <field name="voxbay_callerid"/>
+                        </setting>
+                    </block>
+                    <block title="Bourn Voice API Credentials" name="bonvoice_api">
+                        <setting id="bonvoice_url_setting" string="Platform URL" help="Base API URL for Bonvoice, e.g. https://backend.pbx.bonvoice.com/auto-call">
+                            <field name="bonvoice_url"/>
+                        </setting>
+                        <setting id="bonvoice_username_setting" string="Username" help="Enter your Bonvoice Username for API auth">
+                            <field name="bonvoice_username"/>
+                        </setting>
+                        <setting id="bonvoice_password_setting" string="Password" help="Enter your Bonvoice Password for API auth">
+                            <field name="bonvoice_password"/>
+                        </setting>
+                        <setting id="bonvoice_leg_a_setting" string="Leg A Caller ID (Agent)" help="Caller ID configured for the agent calls">
+                            <field name="bonvoice_leg_a_caller_id"/>
+                        </setting>
+                        <setting id="bonvoice_leg_b_setting" string="Leg B Caller ID (Customer)" help="Caller ID configured for the customer calls">
+                            <field name="bonvoice_leg_b_caller_id"/>
+                        </setting>
+                    </block>
+                    <block title="Meta Webhook Integration" name="meta_api">
+                        <setting id="meta_verify_token_setting" string="Verify Token" help="A custom string to secure and verify the Meta webhook endpoint">
+                            <field name="meta_verify_token"/>
+                        </setting>
+                        <setting id="meta_page_access_token_setting" string="Page Access Token" help="Long-lived Page Access Token from Meta Developer App for Graph API">
+                            <field name="meta_page_access_token"/>
+                        </setting>
+                    </block>
+                    <block title="Call &gt; Lead Automation" name="call_lead_automation">
+                        <setting id="auto_create_lead_incoming_setting" string="Auto-Create Lead on Incoming Calls"
+                                 help="If an incoming call's number doesn't match any existing lead, automatically create a new lead for it.">
+                            <field name="auto_create_lead_incoming"/>
+                        </setting>
+                        <setting id="auto_create_lead_outgoing_setting" string="Auto-Create Lead on Outgoing Calls"
+                                 help="If an outgoing call's number doesn't match any existing lead, automatically create a new lead for it. Keep this off if outgoing calls should only ever be made against existing leads.">
+                            <field name="auto_create_lead_outgoing"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    
+    <record id="action_voxbay_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'custom_leads', 'bin_size': False}</field>
+    </record>
+
+    <menuitem id="menu_voxbay_config_settings" name="Configuration" parent="custom_leads.leads_main_menu" sequence="100" groups="custom_leads.group_super_admin"/>
+    <menuitem id="menu_voxbay_settings" name="Settings" parent="menu_voxbay_config_settings" action="action_voxbay_config_settings" sequence="10" groups="custom_leads.group_super_admin"/>
+</odoo>

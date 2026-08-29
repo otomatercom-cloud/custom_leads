@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Odoo View Definition for Whatsapp Message Form -->
+    <record id="lead_convert_lead_form_view" model="ir.ui.view">
+        <field name="name">lead.convert.view.form</field>
+        <field name="model">convert.lead</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Convertion Form">
+                <group>
+                    <group>
+                        <field name="amount"/>
+                        <field name="lead_id"/>
+                        <field name="closing_date"/>
+                        <field name="lead_owner_id"/>
+
+
+                    </group>
+                    <group>
+                        <field name="add_on"/>
+                        <field name="add_amount"/>
+                    </group>
+                </group>
+
+
+                <footer>
+                    <button name="act_convert" string="Convert" type="object" class="oe_highlight"/>
+                    <button name="cancel" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="lead_convert_qualified_form_view" model="ir.ui.view">
+        <field name="name">lead.convert.qualified.view.form</field>
+        <field name="model">qualified.lead.form</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form string="Admission Form">
+                <div class="mb16 col-8 col-lg-10 px-0">
+                    <div class="row">
+<!--                        <h2 class="col-12 col-lg-2">-->
+<!--                            <field name="title" placeholder="Title"/>-->
+<!--                        </h2>-->
+                        <h2 class="col-12 col-lg-10">
+<!--                            <field name="name" placeholder="Name" required="1" invisible="1"/>-->
+                            <table>
+                                <tr>
+                                    <td style="padding-right:10px;">
+                                        <field name="name" required="1" placeholder="Student Name" invisible="1"/>
+                                    </td>
+                                    <td style="padding-right:10px;">
+                                        <field name="first_name" placeholder="First Name"/>
+                                    </td>
+                                    <td style="padding-right:10px;">
+                                        <field name="last_name" required="1" placeholder="Last Name"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </h2>
+                    </div>
+                </div>
+
+                <group>
+                    <group>
+                        <field name="referral_source" widget="radio" options="{'horizontal': true}"/>
+                        <!-- Only show if referral_source is 'yes' -->
+                        <field name="referral_type" widget="radio" options="{'horizontal': true}"
+                               invisible="referral_source != 'yes'"
+                               required="referral_source == 'yes'"/>
+                        <field name="referral_lead_id"
+                               invisible="referral_source != 'yes' or referral_type != 'student'"
+                               required="referral_source == 'yes' and referral_type == 'student'"
+                               options="{'no_create': True, 'no_edit': True}"
+                               context="{'active_test': False, 'referral_search': 1}"
+                               placeholder="Search by Name or Mobile"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group>
+<!--                        <field name="name" invisible="1"/>-->
+                        <field name="gender" style="background-color:#fae7e3;"/>
+                        <field name="mobile" style="background-color:#fae7e3;"/>
+                        <field name="email" style="background-color:#fae7e3;"/>
+                        <field name="birth_date"/>
+<!--                        <field name="course_id"/>-->
+<!--                        <field name="batch_id"/>-->
+
+                    </group>
+
+                    <group>
+                        <field name="batch_id" style="background-color:#fae7e3;"/>
+                        <field name="fee_type" style="background-color:#fae7e3;"/>
+                        <field name="course_id" style="background-color:#fae7e3;"/>
+                        <field name="branch_id" style="background-color:#fae7e3;"/>
+<!--                        <field name="referral" style="background-color:#fae7e3;"/>-->
+                    </group>
+                </group>
+
+
+                <footer>
+                    <button name="act_admission" string="Done" type="object" class="oe_highlight"/>
+                    <button name="cancel" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

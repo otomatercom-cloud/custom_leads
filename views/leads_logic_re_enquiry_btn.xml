@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Injects the Re-Enquiry smart button into the existing
+        leads.logic form view (form_view_leads_logic in leads.xml).
+        Uses xpath position="inside" on the existing button_box div.
+    -->
+    <record id="view_leads_logic_re_enquiry_btn" model="ir.ui.view">
+        <field name="name">leads.logic.form.re_enquiry_button</field>
+        <field name="model">leads.logic</field>
+        <field name="inherit_id" ref="custom_leads.form_view_leads_logic"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button"
+                        type="object"
+                        name="action_open_re_enquiries"
+                        icon="fa-refresh"
+                        invisible="re_enquiry_count == 0">
+                    <field name="re_enquiry_count"
+                           string="Re-Enquiries"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

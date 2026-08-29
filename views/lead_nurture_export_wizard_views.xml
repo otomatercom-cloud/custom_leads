@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lead_nurture_export_wizard_form" model="ir.ui.view">
+        <field name="name">lead.nurture.export.wizard.form</field>
+        <field name="model">lead.nurture.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export for Nurturing">
+                <group>
+                    <field name="purpose"/>
+                </group>
+                <p class="text-muted">
+                    This will download a CSV of the selected leads and log the
+                    export on the Nurturing Dashboard so the team can see how
+                    many WhatsApp / SMS / Call exports have gone out.
+                </p>
+                <footer>
+                    <button name="action_export" type="object" string="Export"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lead_nurture_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export for Nurturing</field>
+        <field name="res_model">lead.nurture.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Bulk action available from the Leads list view (select multiple rows).
+         Open to all lead users — this is a routine daily action for
+         telecallers doing WhatsApp / SMS / call nurturing, unlike the
+         Super-Admin-only bulk wizards elsewhere in this module. -->
+    <record id="action_server_lead_nurture_export" model="ir.actions.server">
+        <field name="name">Export for Nurturing (WhatsApp / SMS / Call)</field>
+        <field name="model_id" ref="model_leads_logic"/>
+        <field name="binding_model_id" ref="model_leads_logic"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Export for Nurturing',
+        'res_model': 'lead.nurture.export.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {'active_model': 'leads.logic', 'active_ids': records.ids},
+    }
+        </field>
+    </record>
+
+    <!-- Bulk action: re-guess Student Category from Lead Source / Campaign
+         name for the selected leads — used to backfill leads created before
+         this field existed, or after fixing a Source/Campaign name. -->
+    <record id="action_server_recalculate_student_category" model="ir.actions.server">
+        <field name="name">Recalculate Student Category (from Source/Campaign)</field>
+        <field name="model_id" ref="model_leads_logic"/>
+        <field name="binding_model_id" ref="model_leads_logic"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    records.action_recalculate_student_category()
+        </field>
+    </record>
+
+</odoo>

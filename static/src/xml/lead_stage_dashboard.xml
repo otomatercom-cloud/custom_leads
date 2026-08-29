@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_leads.LeadStageDashboard">
+        <div class="o_lead_stage_dashboard">
+
+            <!-- Header -->
+            <div class="o_lead_dashboard_header">
+                <div>
+                    <div class="o_lead_dashboard_kicker">Leads Management</div>
+                    <h1>Lead Stage Dashboard</h1>
+                    <p t-if="state.isAdmissionOfficer">
+                        Showing <strong>your leads only</strong> — counts are filtered to your assigned leads.
+                    </p>
+                    <p t-else="">Live summary of all lead stages across the pipeline.</p>
+                </div>
+                <div class="o_lead_dashboard_actions">
+                    <button type="button" class="btn btn-light" t-on-click="loadCounts">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                    <button type="button" class="btn btn-primary" t-on-click="openAnalysis">
+                        <i class="fa fa-bar-chart me-1"/>Analysis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Total bar -->
+            <div class="o_lead_total_panel">
+                <div>
+                    <span t-if="state.isAdmissionOfficer">My Total Leads</span>
+                    <span t-else="">Total Leads</span>
+                    <strong t-esc="state.total"/>
+                </div>
+                <small>Funnel · Prospects · RNR / DNP · Admissions · Re-Try · Alumni · Junk</small>
+            </div>
+
+            <!-- Stage cards -->
+            <div class="o_lead_stage_grid">
+                <t t-foreach="stages" t-as="stage" t-key="stage.key">
+                    <!-- Skeleton card while loading -->
+                    <t t-if="state.loading">
+                        <div t-attf-class="o_lead_stage_card o_lead_stage_{{ stage.accent }} o_lead_skeleton_card">
+                            <div class="o_lead_stage_card_top">
+                                <span class="o_lead_stage_icon"><i t-attf-class="fa {{ stage.icon }}"/></span>
+                                <span class="o_lead_skeleton o_lead_skeleton_num"/>
+                            </div>
+                            <span class="o_lead_stage_label" t-esc="stage.label"/>
+                            <span class="o_lead_skeleton o_lead_skeleton_num"/>
+                            <span class="o_lead_stage_caption" t-esc="stage.caption"/>
+                            <span class="o_lead_skeleton o_lead_skeleton_bar"/>
+                        </div>
+                    </t>
+                    <!-- Real card when loaded -->
+                    <t t-else="">
+                        <button type="button"
+                                t-attf-class="o_lead_stage_card o_lead_stage_{{ stage.accent }}"
+                                t-on-click="() => this.openStage(stage.key)">
+                            <div class="o_lead_stage_card_top">
+                                <span class="o_lead_stage_icon"><i t-attf-class="fa {{ stage.icon }}"/></span>
+                                <span class="o_lead_stage_percent"><t t-esc="getStagePercent(stage.key)"/>%</span>
+                            </div>
+                            <span class="o_lead_stage_label" t-esc="stage.label"/>
+                            <strong class="o_lead_stage_count" t-esc="getStageCount(stage.key)"/>
+                            <span class="o_lead_stage_caption" t-esc="stage.caption"/>
+                            <span class="o_lead_stage_bar">
+                                <span t-att-style="'width: ' + getStagePercent(stage.key) + '%'"/>
+                            </span>
+                        </button>
+                    </t>
+                </t>
+            </div>
+
+            <!-- Managers / Admins only section -->
+            <t t-if="!state.isAdmissionOfficer">
+
+                <!-- ── Performer Spotlights ── -->
+                <div class="o_lead_performers_section">
+                    <div class="o_lead_officer_header" style="margin-bottom:14px">
+                        <div>
+                            <h2>🏆 Top Performers — Admissions</h2>
+                            <p>Best admission officer per period based on leads moved to Admission Done.</p>
+                        </div>
+                    </div>
+                    <div class="o_lead_performers_grid">
+
+                        <!-- Best of the Day -->
+                        <div class="o_performer_card o_performer_day">
+                            <div class="o_performer_period_label">
+                                <i class="fa fa-sun-o me-1"/>Best of the Day
+                            </div>
+                            <t t-if="state.performers.day">
+                                <div class="o_performer_avatar_wrap">
+                                    <span class="o_performer_avatar"
+                                          t-esc="state.performers.day.name[0].toUpperCase()"/>
+                                </div>
+                                <div class="o_performer_name" t-esc="state.performers.day.name"/>
+                                <div class="o_performer_count">
+                                    <strong t-esc="state.performers.day.count"/>
+                                    <span>admissions today</span>
+                                </div>
+                                <button class="o_performer_cta"
+                                        t-on-click="() => this.openPerformerAdmissions(state.performers.day.id, 'day')">
+                                    View Leads <i class="fa fa-arrow-right ms-1"/>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <div class="o_performer_empty">
+                                    <i class="fa fa-inbox fa-2x"/>
+                                    <p>No admissions today yet</p>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Best of the Week (Sun–Sat) -->
+                        <div class="o_performer_card o_performer_week">
+                            <div class="o_performer_period_label">
+                                <i class="fa fa-calendar-o me-1"/>Best of the Week
+                                <small style="font-weight:400;font-size:11px;display:block;margin-top:2px;opacity:.7">Sunday – Saturday</small>
+                            </div>
+                            <t t-if="state.performers.week">
+                                <div class="o_performer_avatar_wrap">
+                                    <span class="o_performer_avatar"
+                                          t-esc="state.performers.week.name[0].toUpperCase()"/>
+                                </div>
+                                <div class="o_performer_name" t-esc="state.performers.week.name"/>
+                                <div class="o_performer_count">
+                                    <strong t-esc="state.performers.week.count"/>
+                                    <span>admissions this week</span>
+                                </div>
+                                <button class="o_performer_cta"
+                                        t-on-click="() => this.openPerformerAdmissions(state.performers.week.id, 'week')">
+                                    View Leads <i class="fa fa-arrow-right ms-1"/>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <div class="o_performer_empty">
+                                    <i class="fa fa-inbox fa-2x"/>
+                                    <p>No admissions this week yet</p>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Best of the Month -->
+                        <div class="o_performer_card o_performer_month">
+                            <div class="o_performer_period_label">
+                                <i class="fa fa-trophy me-1"/>Best of the Month
+                            </div>
+                            <t t-if="state.performers.month">
+                                <div class="o_performer_avatar_wrap">
+                                    <span class="o_performer_avatar"
+                                          t-esc="state.performers.month.name[0].toUpperCase()"/>
+                                </div>
+                                <div class="o_performer_name" t-esc="state.performers.month.name"/>
+                                <div class="o_performer_count">
+                                    <strong t-esc="state.performers.month.count"/>
+                                    <span>admissions this month</span>
+                                </div>
+                                <button class="o_performer_cta"
+                                        t-on-click="() => this.openPerformerAdmissions(state.performers.month.id, 'month')">
+                                    View Leads <i class="fa fa-arrow-right ms-1"/>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <div class="o_performer_empty">
+                                    <i class="fa fa-inbox fa-2x"/>
+                                    <p>No admissions this month yet</p>
+                                </div>
+                            </t>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ── Officer Breakdown Table ── -->
+                <t t-if="state.officers.length">
+                    <div class="o_lead_officer_section">
+                        <div class="o_lead_officer_header">
+                            <div>
+                                <h2>Admission Officer Breakdown</h2>
+                                <p>Live lead counts currently with each officer — click any cell to drill in. Date tabs control the Calls column.</p>
+                            </div>
+                            <div class="o_officer_controls">
+                                <!-- Date filter tabs -->
+                                <div class="o_date_filter_tabs">
+                                    <t t-foreach="dateFilters" t-as="df" t-key="df.key">
+                                        <button type="button"
+                                                t-attf-class="o_date_tab{{ state.dateFilter === df.key ? ' active' : '' }}"
+                                                t-on-click="() => this.setDateFilter(df.key)">
+                                            <t t-esc="df.label"/>
+                                        </button>
+                                    </t>
+                                </div>
+                                <input type="text"
+                                       class="o_lead_officer_search"
+                                       placeholder="Search officer..."
+                                       t-model="state.officerSearch"/>
+                            </div>
+                        </div>
+
+                        <div class="o_lead_officer_table_wrap">
+                            <table class="o_lead_officer_table">
+                                <thead>
+                                    <tr>
+                                        <th class="o_col_officer">Officer</th>
+                                        <th t-foreach="stages" t-as="st" t-key="st.key"
+                                            t-attf-class="o_col_stage o_col_{{ st.accent }}">
+                                            <i t-attf-class="fa {{ st.icon }} me-1"/>
+                                            <t t-esc="st.label"/>
+                                        </th>
+                                        <th class="o_col_total">Total</th>
+                                        <th class="o_col_total" t-attf-title="Calls logged — {{ callsPeriodLabel }}">
+                                            <i class="fa fa-phone me-1"/>Calls
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="filteredOfficers" t-as="officer" t-key="officer.id">
+                                        <tr>
+                                            <td class="o_col_officer">
+                                                <div class="o_officer_name_cell">
+                                                    <span class="o_officer_avatar"
+                                                          t-esc="officer.name[0].toUpperCase()"/>
+                                                    <span t-esc="officer.name"/>
+                                                </div>
+                                            </td>
+                                            <t t-foreach="stages" t-as="st" t-key="st.key">
+                                                <td t-attf-class="o_col_stage o_cell_count{{ (officer.counts[st.key] || 0) === 0 ? ' o_cell_zero' : '' }}"
+                                                    t-on-click="() => this.openOfficerStage(officer.id, st.key)">
+                                                    <t t-esc="officer.counts[st.key] || 0"/>
+                                                </td>
+                                            </t>
+                                            <td class="o_col_total o_cell_total"
+                                                t-on-click="() => this.openOfficerAll(officer.id)">
+                                                <strong t-esc="officer.total"/>
+                                            </td>
+                                            <td class="o_col_total o_cell_total"
+                                                t-on-click="() => this.openOfficerCalls(officer.id)">
+                                                <strong t-esc="officer.calls || 0"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="filteredOfficers.length === 0">
+                                        <tr>
+                                            <td t-att-colspan="stages.length + 3" class="o_no_officers">
+                                                No officers found for this period.
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td class="o_col_officer o_foot_label">All Officers</td>
+                                        <t t-foreach="stages" t-as="st" t-key="st.key">
+                                            <td class="o_col_stage o_foot_cell"
+                                                t-on-click="() => this.openStage(st.key)">
+                                                <t t-esc="getOfficersStageTotal(st.key)"/>
+                                            </td>
+                                        </t>
+                                        <td class="o_col_total o_foot_cell o_foot_total">
+                                            <strong t-esc="officersGrandTotal"/>
+                                        </td>
+                                        <td class="o_col_total o_foot_cell o_foot_total">
+                                            <strong t-esc="state.totalCalls"/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+            </t>
+
+            <!-- Footer -->
+            <div class="o_lead_dashboard_footer">
+                <span t-if="state.loading"><i class="fa fa-circle-o-notch fa-spin me-1"/>Updating counts…</span>
+                <span t-elif="state.isAdmissionOfficer">
+                    <i class="fa fa-lock me-1"/> Showing your assigned leads only. Click any card to view them.
+                </span>
+                <span t-else="">Click any card or table cell to open the matching lead list.</span>
+            </div>
+
+        </div>
+    </t>
+</templates>

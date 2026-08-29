@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+   <!-- Odoo View Definition for Whatsapp Message Form -->
+   <record id="re_allocation_leads_form_view" model="ir.ui.view">
+       <field name="name">re_allocation.view.form</field>
+       <field name="model">re.allocation.leads</field>
+       <field name="priority" eval="8"/>
+       <field name="arch" type="xml">
+           <form string="Re Allocation View">
+               <group>
+                   <field name="lead_owner_id"/>
+                   <field name="leads_ids" widget="many2many_tags"/>
+               </group>
+<!--               <group>-->
+<!--                   <field name="message"/>-->
+<!--               </group>-->
+               <footer>
+                   <button name="act_re_allocation" string="Re Allocation" type="object"/>
+                   <button name="cancel" string="Cancel" special="cancel"/>
+               </footer>
+           </form>
+       </field>
+   </record>
+</odoo>

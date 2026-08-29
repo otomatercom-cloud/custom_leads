@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ── Form View ──────────────────────────────────────────────────── -->
+    <record id="view_call_campaign_form" model="ir.ui.view">
+        <field name="name">call.campaign.form</field>
+        <field name="model">call.campaign</field>
+        <field name="arch" type="xml">
+            <form string="Call Campaign">
+                <header>
+                    <button name="action_load_leads" string="🔄 Load Leads" type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_start" string="▶ Start Campaign" type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_open_runner" string="📞 Open Caller" type="object"
+                            class="btn-success"
+                            invisible="state != 'running'"/>
+                    <button name="action_mark_done" string="✅ Mark Completed" type="object"
+                            invisible="state != 'running'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            class="btn-danger"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_reset" string="🔁 Reset" type="object"
+                            invisible="state not in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,running,done"/>
+                </header>
+                <sheet>
+                    <!-- Stats -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-list" type="object"
+                                name="action_open_runner"
+                                invisible="state != 'running'">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="pending_count"/>
+                                </span>
+                                <span class="o_stat_text">Pending</span>
+                            </div>
+                        </button>
+                        <div class="oe_stat_button o_not_clickable" style="cursor:default;">
+                            <i class="fa fa-phone o_button_icon" title="Called"/>
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="called_count"/>
+                                </span>
+                                <span class="o_stat_text">Called</span>
+                            </div>
+                        </div>
+                        <div class="oe_stat_button o_not_clickable" style="cursor:default;">
+                            <i class="fa fa-users o_button_icon" title="Total Leads"/>
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="lead_count"/>
+                                </span>
+                                <span class="o_stat_text">Total Leads</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Campaign Name"/>
+                        </h1>
+                    </div>
+
+                    <group col="2">
+                        <field name="created_by" readonly="1"/>
+                        <field name="description"/>
+                    </group>
+
+                    <!-- Filters -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;">
+                        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+                            <span style="background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:2px 8px;">🔍 Lead Filters (optional — used by Load Leads)</span>
+                        </div>
+                        <group col="2">
+                            <field name="filter_lead_quality" widget="many2many_tags"/>
+                            <field name="filter_lead_owner" widget="many2many_tags"/>
+                            <field name="filter_leads_source" widget="many2many_tags"/>
+                            <field name="filter_team" widget="many2many_tags"/>
+                        </group>
+                    </div>
+
+                    <!-- Leads list -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+                        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+                            <span style="background:#dcfce7;color:#15803d;border-radius:6px;padding:2px 8px;">📋 Campaign Leads</span>
+                        </div>
+                        <field name="lead_ids" widget="many2many" domain="[]">
+                            <tree string="Leads">
+                                <field name="reference_no" readonly="1"/>
+                                <field name="name"/>
+                                <field name="phone_number"/>
+                                <field name="lead_quality"/>
+                                <field name="course_inter" widget="many2many_tags"/>
+                                <field name="lead_owner"/>
+                                <field name="campaign_call_done" string="Called"/>
+                                <field name="third_response" string="Last Response"/>
+                            </tree>
+                        </field>
+                    </div>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── List View ──────────────────────────────────────────────────── -->
+    <record id="view_call_campaign_list" model="ir.ui.view">
+        <field name="name">call.campaign.list</field>
+        <field name="model">call.campaign</field>
+        <field name="arch" type="xml">
+            <tree string="Call Campaigns"
+                  decoration-success="state == 'done'"
+                  decoration-info="state == 'running'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="created_by"/>
+                <field name="lead_count" string="Total"/>
+                <field name="called_count" string="Called"/>
+                <field name="pending_count" string="Pending"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'running'"
+                       decoration-warning="state == 'draft'"/>
+                <button name="action_open_runner" string="📞 Start Calling" type="object"
+                        class="btn-primary btn-sm"
+                        invisible="state != 'running'"/>
+                <button name="action_start" string="▶ Start" type="object"
+                        class="btn-success btn-sm"
+                        invisible="state != 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Search View ────────────────────────────────────────────────── -->
+    <record id="view_call_campaign_search" model="ir.ui.view">
+        <field name="name">call.campaign.search</field>
+        <field name="model">call.campaign</field>
+        <field name="arch" type="xml">
+            <search string="Search Campaigns">
+                <field name="name" string="Campaign Name"/>
+                <field name="created_by" string="Created By"/>
+                <filter string="Draft" name="filter_draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Running" name="filter_running"
+                        domain="[('state','=','running')]"/>
+                <filter string="Completed" name="filter_done"
+                        domain="[('state','=','done')]"/>
+                <filter string="My Campaigns" name="filter_mine"
+                        domain="[('created_by','=',uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_state"
+                            context="{'group_by':'state'}"/>
+                    <filter string="Created By" name="group_owner"
+                            context="{'group_by':'created_by'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Actions ──────────────────────────────────────────────────── -->
+    <record id="action_call_campaign_list" model="ir.actions.act_window">
+        <field name="name">Call Campaigns List</field>
+        <field name="res_model">call.campaign</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_call_campaign_dashboard" model="ir.actions.client">
+        <field name="name">Call Campaigns</field>
+        <field name="tag">call_campaign_dashboard</field>
+    </record>
+
+    <!-- ── Menu ──────────────────────────────────────────────────────── -->
+    <menuitem id="menu_call_campaign"
+              name="Call Campaigns"
+              parent="leads_main_menu"
+              action="action_call_campaign_dashboard"
+              sequence="25"
+              groups="custom_leads.group_super_admin,custom_leads.group_lead_manager,custom_leads.group_lead_team_lead,custom_leads.group_lead_users,custom_leads.group_lead_tele_callers,custom_leads.group_lead_digital_team,custom_leads.group_lead_digital_head,custom_leads.group_lead_branch_head,custom_leads.group_crash_head,custom_leads.group_crash_user"/>
+
+</odoo>

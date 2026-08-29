@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Client action that loads the OWL dashboard component -->
+    <record id="action_lead_stage_dashboard" model="ir.actions.client">
+        <field name="name">Lead Dashboard</field>
+        <field name="tag">custom_leads.lead_stage_dashboard</field>
+    </record>
+
+    <!-- Graph view for stage analysis -->
+    <record id="view_leads_stage_dashboard_graph" model="ir.ui.view">
+        <field name="name">leads.logic.stage.dashboard.graph</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <graph string="Lead Stage Dashboard" type="bar">
+                <field name="lead_stage_category" type="row"/>
+                <field name="id" type="measure" string="Leads"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view for stage analysis -->
+    <record id="view_leads_stage_dashboard_pivot" model="ir.ui.view">
+        <field name="name">leads.logic.stage.dashboard.pivot</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <pivot string="Lead Stage Analysis">
+                <field name="lead_stage_category" type="row"/>
+                <field name="leads_source" type="col"/>
+                <field name="id" type="measure" string="Leads"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Stage analysis window action -->
+    <record id="action_lead_stage_analysis" model="ir.actions.act_window">
+        <field name="name">Lead Stage Analysis</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="domain">[('lead_stage_category', 'in', ['funnel', 'prospects', 'rnr_dnp', 'admission_done', 're_try', 'alumni', 'junk'])]</field>
+        <field name="context">{'group_by': 'lead_stage_category'}</field>
+    </record>
+
+    <!-- Menu items — parent: leads_main_menu (sequence 0 = first item) -->
+    <menuitem id="menu_leads_dashboard"
+              name="📊 Dashboard"
+              parent="leads_main_menu"
+              action="action_lead_stage_dashboard"
+              sequence="0"/>
+
+    <menuitem id="menu_leads_stage_analysis"
+              name="📈 Stage Analysis"
+              parent="leads_main_menu"
+              action="action_lead_stage_analysis"
+              sequence="2"/>
+
+</odoo>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.actions.act_window" id="action_leads_sources_main_action">
+        <field name="name">Leads Sources</field>
+        <field name="res_model">leads.sources</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="tree_view_leads_sources" model="ir.ui.view">
+        <field name="name">leads.sources.view.tree</field>
+        <field name="model">leads.sources</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="campaign_count" string="Campaigns"/>
+                <field name="digital_lead"/>
+
+            </tree>
+        </field>
+    </record>
+    <record id="form_view_leads_sources" model="ir.ui.view">
+        <field name="name">leads.sources.view.form</field>
+        <field name="model">leads.sources</field>
+        <field name="arch" type="xml">
+            <form string="Leads">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="source"/>
+                            <field name="digital_lead"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page string="Campaigns">
+                            <p class="text-muted">
+                                Add the campaigns that belong under this Lead Source
+                                (e.g. "Urban Chat Leads Meta", "Facebook Meta" under "Digital").
+                                Picking one of these campaigns on a lead will auto-fill this
+                                Lead Source.
+                            </p>
+                            <field name="campaign_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="active"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="form_view_call_response" model="ir.ui.view">
+        <field name="name">leads.response.view.form</field>
+        <field name="model">call.responses</field>
+        <field name="arch" type="xml">
+            <form string="Leads">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+
+                        </group>
+
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_lead_source_campaign">
+        <field name="name">Source Campaigns</field>
+        <field name="res_model">lead.source.campaign</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="tree_view_lead_source_campaign" model="ir.ui.view">
+        <field name="name">lead.source.campaign.view.tree</field>
+        <field name="model">lead.source.campaign</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="lead_source_id" options="{'no_create': False}"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+    <record id="form_view_lead_source_campaign" model="ir.ui.view">
+        <field name="name">lead.source.campaign.view.form</field>
+        <field name="model">lead.source.campaign</field>
+        <field name="arch" type="xml">
+            <form string="Source Campaign">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="lead_source_id" string="Parent Lead Source" options="{'no_create': False}"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem
+            id="leads_source_menu"
+            name="Leads Source"
+            parent="leads_configuration_menu"
+            sequence="1"
+            groups="custom_leads.group_lead_team_lead,custom_leads.group_super_admin"
+            action="action_leads_sources_main_action"/>
+    <menuitem
+            id="lead_source_campaign_menu"
+            name="Source Campaigns"
+            parent="leads_configuration_menu"
+            sequence="2"
+            groups="custom_leads.group_lead_team_lead,custom_leads.group_super_admin"
+            action="action_lead_source_campaign"/>
+</odoo>

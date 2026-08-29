@@ -1,0 +1,26 @@
+ <odoo>
+    <record id="lead_unlock_wizard_form" model="ir.ui.view">
+        <field name="name">lead.unlock.wizard.form</field>
+        <field name="model">lead.unlock.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Unlock Editing">
+                <group>
+                    <label string="Do you want to enable editing for this lead?"/>
+                </group>
+                <footer>
+                    <button string="Unlock"
+                            name="action_unlock"
+                            type="object"
+                            class="btn-primary"/>
+
+                    <button string="Cancel"
+                            special="cancel"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
+
+
+

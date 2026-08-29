@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="custom_leads.CallCampaignDashboard">
+<div class="o_cc_dashboard">
+
+    <!-- ── Top Bar ─────────────────────────────────────────────────── -->
+    <div class="o_cc_topbar">
+        <div class="o_cc_topbar_left">
+            <h1 class="o_cc_title"><i class="fa fa-phone"/> Call Campaigns</h1>
+        </div>
+        <div class="o_cc_topbar_right">
+            <div class="o_cc_search_wrap">
+                <i class="fa fa-search o_cc_search_icon"/>
+                <input class="o_cc_search" placeholder="Search campaigns..."
+                       t-on-input="onSearchInput" t-att-value="state.search"/>
+            </div>
+            <button class="o_cc_new_btn" t-on-click="createNew"
+                    t-if="state.role === 'manager' or state.role === 'tl'">
+                <i class="fa fa-plus"/> New Campaign
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Stats Row ─────────────────────────────────────────────── -->
+    <div class="o_cc_stats_row">
+        <div class="o_cc_stat_card o_cc_stat_total" t-on-click="onSetFilter('all')">
+            <div class="o_cc_stat_icon"><i class="fa fa-list"/></div>
+            <div class="o_cc_stat_info">
+                <div class="o_cc_stat_num" t-esc="state.stats.total"/>
+                <div class="o_cc_stat_lbl">Total Campaigns</div>
+            </div>
+        </div>
+        <div class="o_cc_stat_card o_cc_stat_running" t-on-click="onSetFilter('running')">
+            <div class="o_cc_stat_icon"><i class="fa fa-play-circle"/></div>
+            <div class="o_cc_stat_info">
+                <div class="o_cc_stat_num" t-esc="state.stats.running"/>
+                <div class="o_cc_stat_lbl">Running</div>
+            </div>
+        </div>
+        <div class="o_cc_stat_card o_cc_stat_draft" t-on-click="onSetFilter('draft')">
+            <div class="o_cc_stat_icon"><i class="fa fa-pencil"/></div>
+            <div class="o_cc_stat_info">
+                <div class="o_cc_stat_num" t-esc="state.stats.draft"/>
+                <div class="o_cc_stat_lbl">Draft</div>
+            </div>
+        </div>
+        <div class="o_cc_stat_card o_cc_stat_done" t-on-click="onSetFilter('done')">
+            <div class="o_cc_stat_icon"><i class="fa fa-check-circle"/></div>
+            <div class="o_cc_stat_info">
+                <div class="o_cc_stat_num" t-esc="state.stats.done"/>
+                <div class="o_cc_stat_lbl">Completed</div>
+            </div>
+        </div>
+        <div class="o_cc_stat_card o_cc_stat_leads">
+            <div class="o_cc_stat_icon"><i class="fa fa-users"/></div>
+            <div class="o_cc_stat_info">
+                <div class="o_cc_stat_num" t-esc="state.stats.total_called + '/' + state.stats.total_leads"/>
+                <div class="o_cc_stat_lbl">Calls Made</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filter Tabs ───────────────────────────────────────────── -->
+    <div class="o_cc_filter_tabs">
+        <button class="o_cc_tab" t-att-class="{'o_cc_tab_active': state.filter === 'all'}"
+                t-on-click="onSetFilter('all')">All</button>
+        <button class="o_cc_tab" t-att-class="{'o_cc_tab_active': state.filter === 'running'}"
+                t-on-click="onSetFilter('running')">🟢 Running</button>
+        <button class="o_cc_tab" t-att-class="{'o_cc_tab_active': state.filter === 'draft'}"
+                t-on-click="onSetFilter('draft')">📝 Draft</button>
+        <button class="o_cc_tab" t-att-class="{'o_cc_tab_active': state.filter === 'done'}"
+                t-on-click="onSetFilter('done')">✅ Done</button>
+        <button class="o_cc_tab" t-att-class="{'o_cc_tab_active': state.filter === 'mine'}"
+                t-on-click="onSetFilter('mine')">👤 Mine</button>
+    </div>
+
+    <!-- ── Loading ───────────────────────────────────────────────── -->
+    <t t-if="state.loading">
+        <div class="o_cc_loading"><i class="fa fa-spinner fa-spin fa-2x"/><p>Loading campaigns...</p></div>
+    </t>
+
+    <!-- ── Campaign Grid ─────────────────────────────────────────── -->
+    <t t-elif="filteredCampaigns.length === 0">
+        <div class="o_cc_empty">
+            <div class="o_cc_empty_icon">📋</div>
+            <h3>No campaigns found</h3>
+            <p>Try a different filter or create a new campaign.</p>
+            <button class="o_cc_new_btn" t-on-click="createNew"
+                    t-if="state.role === 'manager' or state.role === 'tl'">
+                <i class="fa fa-plus"/> Create Campaign
+            </button>
+        </div>
+    </t>
+
+    <t t-else="">
+        <div class="o_cc_grid">
+            <t t-foreach="filteredCampaigns" t-as="c" t-key="c.id">
+                <div class="o_cc_card" t-att-class="{'o_cc_card_running': c.state === 'running', 'o_cc_card_done': c.state === 'done'}">
+
+                    <!-- Card Header -->
+                    <div class="o_cc_card_header">
+                        <div class="o_cc_card_name" t-esc="c.name"/>
+                        <span class="o_cc_badge" t-att-class="stateClass(c.state)"
+                              t-esc="stateLabel(c.state)"/>
+                    </div>
+
+                    <!-- Created by -->
+                    <div class="o_cc_card_meta">
+                        <i class="fa fa-user"/> <t t-esc="c.created_by"/>
+                        <span class="o_cc_card_date"><i class="fa fa-calendar"/> <t t-esc="c.date"/></span>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="o_cc_progress_wrap">
+                        <div class="o_cc_progress_bar"
+                             t-attf-style="width:{{progressPct(c)}}%;background:{{c.state === 'done' ? '#22c55e' : '#2563eb'}}"/>
+                    </div>
+                    <div class="o_cc_progress_label">
+                        <span t-esc="c.called"/> / <span t-esc="c.total"/> called
+                        (<span t-esc="progressPct(c)"/>%)
+                    </div>
+
+                    <!-- Stats row -->
+                    <div class="o_cc_card_stats">
+                        <div class="o_cc_cs">
+                            <span class="o_cc_cs_num o_cc_cs_pending" t-esc="c.pending"/>
+                            <span class="o_cc_cs_lbl">Pending</span>
+                        </div>
+                        <div class="o_cc_cs">
+                            <span class="o_cc_cs_num o_cc_cs_called" t-esc="c.called"/>
+                            <span class="o_cc_cs_lbl">Called</span>
+                        </div>
+                        <div class="o_cc_cs">
+                            <span class="o_cc_cs_num" t-esc="c.total"/>
+                            <span class="o_cc_cs_lbl">Total</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="o_cc_card_actions">
+                        <button class="o_cc_btn_primary" t-on-click="() => this.openRunner(c.id, c.name)"
+                                t-if="c.state === 'running'">
+                            <i class="fa fa-phone"/> Start Calling
+                        </button>
+                        <button class="o_cc_btn_secondary" t-on-click="() => this.openForm(c.id)">
+                            <i class="fa fa-eye"/> View
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</div>
+</t>
+</templates>

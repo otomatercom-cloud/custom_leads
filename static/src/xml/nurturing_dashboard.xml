@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_leads.NurturingDashboard">
+        <div class="o_nurture_dashboard">
+
+            <!-- Header -->
+            <div class="o_nurture_header">
+                <div>
+                    <div class="o_nurture_kicker">Leads Management</div>
+                    <h1>Nurturing Dashboard</h1>
+                    <p t-if="state.isAdmissionOfficer">
+                        Showing <strong>your leads only</strong>.
+                    </p>
+                    <p t-else="">Segment leads by student category to plan follow-up and nurturing.</p>
+                </div>
+                <div class="o_nurture_actions">
+                    <button type="button" class="btn btn-light" t-on-click="loadCounts">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                    <button type="button" class="btn btn-warning" t-on-click="backfillAll"
+                            t-att-disabled="state.backfilling">
+                        <i class="fa fa-magic me-1"/>
+                        <t t-if="state.backfilling">Backfilling…</t>
+                        <t t-else="">Backfill All (Legacy Leads)</t>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Date range bar -->
+            <div class="o_nurture_daterange">
+                <div class="o_nurture_daterange_field">
+                    <label>From</label>
+                    <input type="date" t-att-value="state.dateFrom"
+                           t-on-change="(ev) => this.onDateChange('dateFrom', ev)"/>
+                </div>
+                <div class="o_nurture_daterange_field">
+                    <label>To (Present)</label>
+                    <input type="date" t-att-value="state.dateTo"
+                           t-on-change="(ev) => this.onDateChange('dateTo', ev)"/>
+                </div>
+                <button type="button" class="btn btn-link" t-on-click="resetToDefault">
+                    Reset to May 2026 – Present
+                </button>
+                <div class="o_nurture_total">
+                    <span>Total in range</span>
+                    <strong t-esc="state.total"/>
+                </div>
+            </div>
+
+            <!-- Nurturing activity: WhatsApp / SMS / Calls -->
+            <div class="o_nurture_activity_strip">
+                <div class="o_nurture_activity_card o_nurture_act_whatsapp"
+                     t-on-click="() => this.openExportHistory('whatsapp', 'WhatsApp')">
+                    <i class="fa fa-whatsapp"/>
+                    <div>
+                        <span class="o_nurture_activity_label">WhatsApp Sent</span>
+                        <strong t-esc="state.activity.whatsapp.leads_sent"/>
+                        <small><t t-esc="state.activity.whatsapp.batches"/> export(s)</small>
+                    </div>
+                </div>
+                <div class="o_nurture_activity_card o_nurture_act_sms"
+                     t-on-click="() => this.openExportHistory('sms', 'SMS')">
+                    <i class="fa fa-comment-o"/>
+                    <div>
+                        <span class="o_nurture_activity_label">SMS Sent</span>
+                        <strong t-esc="state.activity.sms.leads_sent"/>
+                        <small><t t-esc="state.activity.sms.batches"/> export(s)</small>
+                    </div>
+                </div>
+                <div class="o_nurture_activity_card o_nurture_act_call"
+                     t-on-click="openCallLog">
+                    <i class="fa fa-phone"/>
+                    <div>
+                        <span class="o_nurture_activity_label">Calls Made</span>
+                        <strong t-esc="state.activity.calls_made"/>
+                        <small>logged calls</small>
+                    </div>
+                </div>
+                <div class="o_nurture_activity_card o_nurture_act_calllist"
+                     t-on-click="() => this.openExportHistory('call', 'Call List')">
+                    <i class="fa fa-list"/>
+                    <div>
+                        <span class="o_nurture_activity_label">Call Lists Exported</span>
+                        <strong t-esc="state.activity.call_exports.leads_sent"/>
+                        <small><t t-esc="state.activity.call_exports.batches"/> export(s)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category cards -->
+            <div class="o_nurture_grid">
+                <t t-foreach="categories" t-as="cat" t-key="cat.key">
+                    <t t-if="state.loading">
+                        <div t-attf-class="o_nurture_card o_nurture_{{ cat.accent }} o_nurture_skeleton_card">
+                            <div class="o_nurture_card_top">
+                                <span class="o_nurture_icon"><i t-attf-class="fa {{ cat.icon }}"/></span>
+                            </div>
+                            <span class="o_nurture_label" t-esc="cat.label"/>
+                            <span class="o_nurture_skeleton o_nurture_skeleton_num"/>
+                            <span class="o_nurture_caption" t-esc="cat.caption"/>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <button type="button"
+                                t-attf-class="o_nurture_card o_nurture_{{ cat.accent }}"
+                                t-on-click="() => this.openCategory(cat.key)">
+                            <div class="o_nurture_card_top">
+                                <span class="o_nurture_icon"><i t-attf-class="fa {{ cat.icon }}"/></span>
+                            </div>
+                            <span class="o_nurture_label" t-esc="cat.label"/>
+                            <strong class="o_nurture_count" t-esc="getCount(cat.key)"/>
+                            <span class="o_nurture_caption" t-esc="cat.caption"/>
+                            <small t-if="cat.key === 'meta_leads'" class="o_nurture_meta_note">Prospects stage only</small>
+
+                            <!-- Meta Leads gets a Hot/Warm/Cold breakdown row -->
+                            <div t-if="cat.key === 'meta_leads'" class="o_nurture_meta_breakdown">
+                                <t t-foreach="metaQualityOptions" t-as="mq" t-key="mq.key">
+                                    <span t-attf-class="o_nurture_meta_chip o_nurture_meta_{{ mq.key }}"
+                                          t-on-click.stop="() => this.openMetaQuality(mq.key)">
+                                        <i t-attf-class="fa {{ mq.icon }} me-1"/>
+                                        <t t-esc="mq.label"/>: <strong t-esc="getMetaQualityCount(mq.key)"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </button>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

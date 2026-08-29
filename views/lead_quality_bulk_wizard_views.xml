@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lead_quality_bulk_wizard_form" model="ir.ui.view">
+        <field name="name">lead.quality.bulk.wizard.form</field>
+        <field name="model">lead.quality.bulk.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Change Lead Quality">
+                <group>
+                    <field name="lead_count" readonly="1"/>
+                    <field name="lead_quality"/>
+                    <field name="note" readonly="1" nolabel="1" colspan="2"
+                           class="text-muted"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply to Selected Leads"
+                            class="btn-primary"
+                            confirm="This overrides normal validation (Course Interested, Follow-Up date, Admission-stage checks) for all selected leads. Continue?"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lead_quality_bulk_wizard" model="ir.actions.act_window">
+        <field name="name">Bulk Change Lead Quality</field>
+        <field name="res_model">lead.quality.bulk.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Bulk action available from the Leads list view (select multiple rows).
+         Super Admin only — normal roles keep using the per-lead quality field
+         so the course/follow-up validations stay enforced for them. -->
+    <record id="action_server_bulk_change_lead_quality" model="ir.actions.server">
+        <field name="name">Bulk Change Lead Quality (Super Admin)</field>
+        <field name="model_id" ref="model_leads_logic"/>
+        <field name="binding_model_id" ref="model_leads_logic"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('custom_leads.group_super_admin'))]"/>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Bulk Change Lead Quality',
+        'res_model': 'lead.quality.bulk.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {'active_model': 'leads.logic', 'active_ids': records.ids},
+    }
+        </field>
+    </record>
+
+</odoo>

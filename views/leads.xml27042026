@@ -1,0 +1,2464 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="action_send_results_highlights_server" model="ir.actions.server">
+        <field name="name">Send Results Highlights</field>
+        <field name="model_id" ref="custom_leads.model_leads_logic"/>
+        <field name="binding_model_id" ref="custom_leads.model_leads_logic"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = records.action_send_results_highlights()
+        </field>
+    </record>
+
+    <record id="list_view_of_admission" model="ir.ui.view">
+        <field name="name">admission.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <tree multi_edit="1" js_class="custom_list_renderer">
+                <field name="admission_date" string="Admission Date" readonly="state == 'qualified'" widget="search"/>
+                <field name="name" readonly="state == 'qualified'" widget="search"/>
+                <field name="phone_number" string="Mobile" widget="phone" readonly="state == 'qualified'"/>
+                <field name="leads_source" readonly="state == 'qualified'"/>
+                <field name="course_id" string="Course Interested" readonly="state == 'qualified'"/>
+                <field name="branch_id" string="Branch Interested" readonly="state == 'qualified'"/>
+                <field name="batch_id" string="Batch Interested" readonly="state == 'qualified'"/>
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"/>
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead"/>
+                <field name="state" optional="hide"/>
+                <field name="student_profile_created" optional="hide"/>
+                <field name="lead_quality" widget="badge" decoration-success="lead_quality == 'admission'"
+                       string="Status" readonly="state == 'qualified'"/>
+                <field name="receipt_no" widget="badge" readonly="0" string="Invoice No."/>
+                <field name="admission_amount" readonly="1" sum="admission_amount" class="admission-amount"/>
+                <field string="Expected Revenue" name="batch_fee" sum="Total Fee"/>
+                <field name="date_of_receipt" widget="badge" readonly="0" string="Date of Invoice"/>
+                <field name="student_id" string="Student" invisible="student_profile_created == 0"/>
+
+                <button name="act_print_invoice" type="object" class="fa fa-download" string=" Invoice"
+                        invisible="admission_amount == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="list_view_of_waiting_for_admission" model="ir.ui.view">
+        <field name="name">waiting.for.admission.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <tree multi_edit="1" js_class="custom_list_renderer">
+                <field name="admission_date" string="Admission Date" readonly="state == 'qualified'" widget="search"/>
+                <field name="name" readonly="state == 'qualified'" widget="search"/>
+                <field name="phone_number" string="Mobile" widget="phone" readonly="state == 'qualified'"/>
+                <field name="leads_source" readonly="state == 'qualified'"/>
+                <field name="course_id" string="Course Interested" readonly="state == 'qualified'"/>
+                <field name="branch_id" string="Branch Interested" readonly="state == 'qualified'"/>
+                <field name="batch_id" string="Batch Interested" readonly="state == 'qualified'"/>
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"/>
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead"/>
+                <field name="student_profile_created" optional="hide"/>
+                <field name="state" optional="hide"/>
+                <field name="lead_quality" widget="badge" decoration-success="lead_quality == 'admission'"
+                       string="Status" readonly="state == 'qualified'"/>
+                <field name="receipt_no" widget="badge" readonly="0" string="Invoice No."/>
+                <field name="admission_amount" readonly="1" sum="admission_amount" class="admission-amount"/>
+                <field string="Batch Fee" name="batch_fee" sum="Total Fee"/>
+                <field name="date_of_receipt" widget="badge" readonly="0" string="Date of Invoice"/>
+                <field name="student_profile_created"/>
+                <field name="admission_fee_paid" optional="hide"/>
+                <field name="student_id" string="Student" invisible="student_profile_created == 0"/>
+
+                <button name="act_print_invoice" type="object" class="fa fa-download" string=" Invoice"
+                        invisible="admission_amount == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="tree_view_leads_logic" model="ir.ui.view">
+        <field name="name">leads.logic.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <!--            <tree multi_edit="1" js_class="lead_funnel_list">-->
+            <tree multi_edit="1" js_class="lead_funnel_list"
+                  decoration-info="lead_stage_category == 'prospects'"
+                  decoration-success="lead_stage_category == 'admission_done'"
+                  decoration-warning="lead_stage_category == 'rnr_dnp'"
+                  decoration-muted="lead_stage_category == 'junk'">
+                <field name="date_of_adding" string="Added Date"/>
+                <field name="reference_no"/>
+
+                <field name="name"/>
+                <field name="leads_source" optional="show"/>
+                <field name="college_name" string="Seminar@College"/>
+                <field name="place" string="Location"/>
+                <field name="lead_stage_category"
+                       widget="badge"
+                       decoration-info="lead_stage_category == 'prospects'"
+                       decoration-success="lead_stage_category == 'admission_done'"
+                       decoration-warning="lead_stage_category == 'rnr_dnp'"
+                       decoration-danger="lead_stage_category == 'junk'"
+                       string="Stage"/>
+                <field name="lead_quality" widget="badge" decoration-info="lead_quality == 'new'"
+                       decoration-danger="lead_quality == 'bad_lead'" decoration-success="lead_quality == 'admission'"
+                       decoration-warning="lead_quality == 'warm'"
+                       decoration-primary="lead_quality == 'waiting_for_admission'"/>
+                <field name="course_inter" widget="many2many_tags" options="{'no_create': True}"/>
+                <field name="response_ids" widget="many2many_tags" options="{'no_create': True}"/>
+
+                <field name="course_id" string="Course Interested" optional="hide"/>
+                <field name="branch_id" string="Branch Interested" optional="hide"/>
+                <field name="next_follow_up_date"/>
+                <field name="call_responses" widget="many2many_tags" string="Last Call Responses"/>
+                <field name="call_response" string="Response Now"/>
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"
+                       optional="show"/>
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead" optional="show"/>
+
+                <button name="act_admission" type="object" string="Waiting for Admission Payment" class="btn-convert"
+                        invisible="lead_quality != 'waiting_for_admission' or student_profile_created == 1"/>
+
+                <field name="student_profile_created" optional="hide"/>
+                <field name="admission_fee_paid" optional="hide"/>
+                <field name="state" decoration-info="state == 'new'" decoration-success="state == 'qualified'"
+                       decoration-danger="state == 'lost'" decoration-primary="state == 'in_progress'" widget="badge"
+                       optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="form_view_leads_logic" model="ir.ui.view">
+        <field name="name">leads.logic.view.form</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <form string="Leads">
+                <style>
+                    label.o_required_modifier {
+                    color: red !important;
+                    }
+                </style>
+
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="action_add_call_log" type="object" string="Log Call" class="btn-primary"/>
+                    <button name="act_attempt_to_connect" type="object" string="Attempted to Contact"
+                            class="btn btn-primary me-1" invisible="state != 'new'"/>
+                    <button name="action_toggle_marketing_info"
+                            string="Hide Sales Guide"
+                            type="object"
+                            class="btn-danger"
+                            icon="fa-eye-slash"
+                            invisible="hide_marketing_stages"/>
+
+                    <button name="action_toggle_marketing_info"
+                            string="Show Sales Guide"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-eye"
+                            invisible="not hide_marketing_stages"/>
+                    <button name="act_admission" type="object" string="Waiting for Admission Payment"
+                            class="btn-convert" invisible="state != 'in_progress' or student_profile_created == 1"/>
+                    <button name="act_return_to_new_lead" type="object" string="Return to New Lead" class="btn-lost"
+                            invisible="state != 'lost'"/>
+                    <button name="action_voxbay_call" string="Call (Voxbay)" type="object"
+                            class="btn-primary btn-success" icon="fa-phone"
+                            invisible="state == 'lost' or state == 'qualified'"/>
+                    <button name="action_bonvoice_call" string="Call (Bourn Voice)" type="object"
+                            class="btn-primary btn-success" icon="fa-phone"
+                            invisible="state == 'lost' or state == 'qualified'"/>
+                    <button name="action_schedule_meeting" string="Schedule Zoom/Walkin" type="object"
+                            class="btn-primary" invisible="state != 'in_progress'"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="get_current_student_profile" icon="fa-user"
+                                string="Student Profile">
+                            <field string="Student Profile" name="student_smart_count" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="state != 'lost'"/>
+                    <widget name="web_ribbon" title="Qualified" bg_color="text-bg-success"
+                            invisible="state != 'qualified'"/>
+
+                    <div class="oe_title">
+                        <label for="name" string="Lead Name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. John Doe / Lead Title" readonly="state == 'qualified'"
+                                   required="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="lead_quality" class="o_form_required" readonly="state == 'qualified'"/>
+                            <field name="lead_stage_category" readonly="1"/>
+                            <field name="phone_number" class="o_form_required" readonly="state == 'qualified'"
+                                   widget="phone"/>
+                            <field name="phone_number_second" widget="phone"/>
+                            <field name="email_address" readonly="state == 'qualified'" class="text-red-500"
+                                   widget="email"/>
+                            <field name="parent_number" widget="phone"/>
+                        </group>
+                        <group>
+                            <field name="leads_source" class="o_form_required" options="{'no_create':True}"
+                                   readonly="state == 'qualified'"/>
+
+                            <field name="academic_year" required="1"/>
+                            <field name="crash_lead"/>
+                            <field name="lead_owner" readonly="state == 'qualified'" widget="many2one_avatar_user"/>
+                            <field name="tele_caller_id" widget="many2one_avatar_user"/>
+                            <field name="course_inter" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="Select multiple courses..." colspan="2"/>
+
+                            <label for="act_connected" string="Actions" class="oe_edit_only"
+                                   invisible="state not in ['in_progress', 'not_connected']"/>
+                            <div class="o_row">
+                                <button name="action_add_followup" string="Add Follow-Up" type="object"
+                                        class="btn btn-sm btn-primary" icon="fa-calendar"/>
+                                <button name="act_connected" type="object" string="Set Next Follow Up"
+                                        class="btn btn-sm btn-primary" invisible="1" icon="fa-calendar"/>
+                                <button name="act_call_back" type="object" string="Call Back"
+                                        invisible="state != 'not_connected'" class="btn btn-sm btn-secondary"
+                                        icon="fa-phone"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <style>
+                        @keyframes shake-animation {
+                        0% { transform: translateX(0); }
+                        25% { transform: translateX(5px); }
+                        50% { transform: translateX(-5px); }
+                        75% { transform: translateX(5px); }
+                        100% { transform: translateX(0); }
+                        }
+                        .o_warm_alert_animated {
+                        animation: shake-animation 0.5s ease-in-out;
+                        color: #721c24;
+                        background-color: #f8d7da;
+                        border-left: 5px solid #dc3545;
+                        font-weight: bold;
+                        padding: 10px;
+                        margin-top: 10px;
+                        }
+                    </style>
+
+                    <field name="cma_usa_short_video_date" invisible="1"/>
+                    <field name="cma_usa_starter_kit_date" invisible="1"/>
+                    <field name="cma_usa_webinar_invite_date" invisible="1"/>
+                    <field name="cma_usa_brochure_date" invisible="1"/>
+                    <field name="cma_usa_detailed_videos_date" invisible="1"/>
+                    <field name="cma_usa_demo_class_date" invisible="1"/>
+                    <field name="cma_usa_results_posters_date" invisible="1"/>
+                    <field name="cma_usa_faculty_pool_date" invisible="1"/>
+                    <field name="cma_usa_testimonials_date" invisible="1"/>
+                    <field name="cma_usa_placements_date" invisible="1"/>
+                    <field name="cma_usa_value_added_date" invisible="1"/>
+                    <field name="cma_usa_counselling_date" invisible="1"/>
+
+                    <field name="ciap_media_sent" invisible="1"/>
+                    <field name="is_ciap_selected" invisible="1"/>
+                    <field name="is_acca_selected" invisible="1"/>
+                    <field name="is_cma_india_cat_selected" invisible="1"/>
+                    <field name="is_cma_usa_selected" invisible="1"/>
+                    <field name="is_ca_inter_selected" invisible="1"/>
+                    <field name="is_ca_selected" invisible="1"/>
+                    <field name="webinar_invite_sent" invisible="1"/>
+
+                    <group invisible="1">
+                        <field name="is_cma_usa_selected"/>
+                        <field name="cma_usa_short_video_sent"/>
+                        <field name="cma_usa_starter_kit_sent"/>
+                        <field name="cma_usa_webinar_invite_sent"/>
+                        <field name="cma_usa_brochure_sent"/>
+                        <field name="cma_usa_detailed_videos_sent"/>
+                        <field name="cma_usa_demo_class_sent"/>
+                        <field name="cma_usa_results_posters_sent"/>
+                        <field name="cma_usa_rank_holders_sent"/>
+                        <field name="cma_usa_faculty_pool_sent"/>
+                        <field name="cma_usa_testimonials_sent"/>
+                        <field name="cma_usa_winners_meet_sent"/>
+                        <field name="cma_usa_placements_sent"/>
+                        <field name="cma_usa_value_added_sent"/>
+                        <field name="cma_usa_study_materials_sent"/>
+                        <field name="cma_usa_counselling_done"/>
+                    </group>
+
+                    <group invisible="1">
+                        <field name="is_acca_selected"/>
+                        <field name="acca_short_video_sent"/>
+                        <field name="acca_starter_kit_sent"/>
+                        <field name="acca_webinar_invite_sent"/>
+                        <field name="acca_brochure_sent"/>
+                        <field name="acca_detailed_videos_sent"/>
+                        <field name="acca_demo_class_sent"/>
+                        <field name="acca_results_posters_sent"/>
+                        <field name="acca_rank_holders_sent"/>
+                        <field name="acca_faculty_pool_sent"/>
+                        <field name="acca_testimonials_sent"/>
+                        <field name="acca_winners_meet_sent"/>
+                        <field name="acca_placements_sent"/>
+                        <field name="acca_value_added_sent"/>
+                        <field name="acca_study_materials_sent"/>
+                        <field name="acca_counselling_done"/>
+                    </group>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button name="action_send_course_launch_media" string="Send Launch CIAP Course Video"
+                                type="object" class="btn-primary"
+                                invisible="ciap_media_sent or not is_ciap_selected"/>
+                        <button name="action_open_webinar_wizard" string="Free Webinar Invite" type="object"
+                                class="btn-primary"
+                                invisible="webinar_invite_sent or not is_ciap_selected"/>
+
+                        <button name="action_send_cma_short_video" string="CMA Short Details Video" type="object"
+                                class="btn-primary"
+                                invisible="cma_usa_short_video_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_starter_kit" string="CMA Starter Kit (Free)" type="object"
+                                class="btn-primary"
+                                invisible="cma_usa_starter_kit_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_webinar_invite" string="CMA Webinar/Demo Invite" type="object"
+                                class="btn-primary"
+                                invisible="cma_usa_webinar_invite_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_short_video" string="ACCA Short Details Video" type="object"
+                                class="btn-primary"
+                                invisible="acca_short_video_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_starter_kit" string="ACCA Starter Kit (Free)" type="object"
+                                class="btn-primary"
+                                invisible="acca_starter_kit_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_webinar_invite" string="ACCA Webinar/Demo Invite" type="object"
+                                class="btn-primary"
+                                invisible="acca_webinar_invite_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage1_completed">
+                        <button name="action_send_cma_brochure" string="CMA Course Brochure" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_brochure_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_detailed_videos" string="CMA Detailed Course Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_detailed_videos_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_demo_class" string="CMA Free Demo Class" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_demo_class_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_brochure" string="ACCA Course Brochure" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_brochure_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_detailed_videos" string="ACCA Detailed Course Videos"
+                                type="object"
+                                class="btn btn-primary"
+                                invisible="acca_detailed_videos_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_demo_class" string="ACCA Free Demo Class" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_demo_class_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage2_completed">
+                        <button name="action_send_ciap_faculty_pool" string="CIAP Faculty Pool" type="object"
+                                class="btn btn-primary"
+                                invisible="ciap_faculty_pool_sent or not is_ciap_selected"/>
+                        <button name="action_send_ciap_value_added_videos" string="CIAP Value Added Programs Videos"
+                                type="object" class="btn btn-primary"
+                                invisible="ciap_value_added_videos_sent or not is_ciap_selected"/>
+
+                        <button name="action_send_cma_results" string="CMA Results Posters" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_results_posters_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_rank_holders" string="CMA Rank Holders List" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_rank_holders_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_faculty" string="CMA Faculty Pool Intro" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_faculty_pool_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_results" string="ACCA Results Posters" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_results_posters_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_rank_holders" string="ACCA Rank Holders List" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_rank_holders_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_faculty" string="ACCA Faculty Pool Intro" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_faculty_pool_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage3_completed">
+                        <button name="action_send_ciap_testimonials" string="CIAP Student Testimonials" type="object"
+                                class="btn btn-primary"
+                                invisible="ciap_testimonials_sent or not is_ciap_selected"/>
+                        <button name="action_send_ciap_winners_meet" string="CIAP Winners Meet Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="ciap_winners_meet_sent or not is_ciap_selected"/>
+
+                        <button name="action_send_cma_testimonials" string="CMA Student/Parent Testimonials"
+                                type="object" class="btn btn-primary"
+                                invisible="cma_usa_testimonials_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_winners_meet" string="CMA Winners Meet Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_winners_meet_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_testimonials" string="ACCA Student Testimonials"
+                                type="object" class="btn btn-primary"
+                                invisible="acca_testimonials_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_winners_meet" string="ACCA Winners Meet Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_winners_meet_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage4_completed">
+                        <button name="action_send_ciap_placement_media" string="CIAP Placement Photos / Videos"
+                                type="object" class="btn btn-primary"
+                                invisible="ciap_placement_media_sent or not is_ciap_selected"/>
+
+                        <button name="action_send_cma_placements" string="CMA Placement Success Proof" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_placements_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_placements" string="ACCA Placement Success Proof" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_placements_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage5_completed">
+                        <button name="action_send_ciap_starter_kit" string="CIAP Starter Kit" type="object"
+                                class="btn btn-primary"
+                                invisible="ciap_starter_kit_sent or not is_ciap_selected"/>
+                        <button name="action_reshare_ciap_key_benefits" string="Re-share Key Benefits" type="object"
+                                class="btn btn-primary"
+                                invisible="ciap_key_benefits_reshared or not is_ciap_selected"/>
+
+                        <button name="action_send_cma_value_added" string="CMA Value-Added Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_value_added_sent or not is_cma_usa_selected"/>
+                        <button name="action_send_cma_study_materials" string="CMA Study Material Preview" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_study_materials_sent or not is_cma_usa_selected"/>
+
+                        <button name="action_send_acca_value_added" string="ACCA Value-Added Videos" type="object"
+                                class="btn btn-primary"
+                                invisible="acca_value_added_sent or not is_acca_selected"/>
+                        <button name="action_send_acca_study_materials" string="ACCA Study Material Preview"
+                                type="object"
+                                class="btn btn-primary"
+                                invisible="acca_study_materials_sent or not is_acca_selected"/>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2 flex-wrap" invisible="not stage6_completed">
+                        <button name="action_send_ciap_career_counselling" string="CIAP Free Career Counselling"
+                                type="object" class="btn btn-primary"
+                                invisible="ciap_career_counselling_sent or not is_ciap_selected"/>
+
+                        <button name="action_cma_counselling_done" string="CMA 1-on-1 Career Counselling" type="object"
+                                class="btn btn-primary"
+                                invisible="cma_usa_counselling_done or not is_cma_usa_selected"/>
+
+                        <button name="action_acca_counselling_done" string="ACCA 1-on-1 Career Counselling"
+                                type="object"
+                                class="btn btn-primary"
+                                invisible="acca_counselling_done or not is_acca_selected"/>
+                    </div>
+
+
+                    <field name="stage2_completed" invisible="1"/>
+                    <field name="ciap_roadmap_sent" invisible="1"/>
+                    <field name="ciap_brochure_sent" invisible="1"/>
+                    <field name="detailed_ciap_video_sent" invisible="1"/>
+                    <field name="ciap_demo_class_sent" invisible="1"/>
+
+                    <div class="d-flex gap-2 mt-2" invisible="not stage1_completed">
+                        <button name="action_send_ciap_roadmap" string="Send Career Roadmap" type="object"
+                                class="btn btn-primary" invisible="ciap_roadmap_sent or not is_ciap_selected"/>
+                        <button name="action_send_ciap_brochure" string="Send Course Brochure" type="object"
+                                class="btn btn-primary" invisible="ciap_brochure_sent or not is_ciap_selected"/>
+                        <button name="action_send_detailed_ciap_video" string="Send Detailed Course Videos"
+                                type="object" class="btn btn-primary"
+                                invisible="detailed_ciap_video_sent or not is_ciap_selected"/>
+                        <button name="action_send_ciap_demo_class" string="Send Free Demo Class" type="object"
+                                class="btn btn-primary" invisible="ciap_demo_class_sent or not is_ciap_selected"/>
+                        <button name="action_send_ciap_assessment_test" string="Send Assessment Test" type="object"
+                                class="btn btn-primary" invisible="ciap_assessment_test_sent"/>
+                    </div>
+
+                    <field name="hide_marketing_stages" invisible="1"/>
+
+                    <div name="marketing_guide_wrapper" invisible="hide_marketing_stages">
+                    </div>
+
+                    <div name="marketing_guide_wrapper" invisible="hide_marketing_stages">
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage1_completed or not is_ciap_selected">
+                            <div class="bg-info-light p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-rocket me-2 fs-5 text-info"/>
+                                <strong class="text-uppercase small fw-bold">Stage 1: Attention + Curiosity (Day 0–1)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-100 p-3 me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 45px; height: 45px;">
+                                        <i class="fa fa-graduation-cap text-primary fs-4"></i>
+                                    </div>
+                                    <h4 class="mb-0 fw-bold text-900">Career-Oriented Excellence</h4>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-check text-success mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">Professional Path</div>
+                                                <div class="text-muted small">Immediate employment focus.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-bolt text-warning mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">Single Exam</div>
+                                                <div class="text-muted small">Master job-ready skills fast.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-globe text-info mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">Global Standards</div>
+                                                <div class="text-muted small">NSDC + UK Certification.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_accordion mb-3" invisible="stage2_completed or not is_ciap_selected">
+                            <div class="alert alert-success p-0 overflow-hidden border-0 shadow-sm" role="status">
+                                <div class="bg-success-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-success small"/>
+                                        <i class="fa fa-lightbulb-o me-2 fs-5 text-success"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 2: Understanding + Clarity
+                                            (Day
+                                            1–3)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage2_completed"
+                                              class="badge rounded-pill bg-warning-light text-warning border border-warning">
+                                            Action Required
+                                        </span>
+                                        <span invisible="not stage2_completed" class="badge rounded-pill bg-success">
+                                            Completed
+                                        </span>
+                                        <span class="badge rounded-pill bg-success-light text-success border border-success">
+                                            Admission Toolkit
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage2"
+                                     t-attf-class="collapse {{ stage2_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-4 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <span class="badge bg-primary-light text-primary me-2">01</span>
+                                                    <h6 class="mb-0 fw-bold">What is CIAP?</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    The <strong>Certified International Accounting Professional</strong> program.
+                                                    A bridge between academic theory and real-world accounting office
+                                                    roles.
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-4 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <span class="badge bg-primary-light text-primary me-2">02</span>
+                                                    <h6 class="mb-0 fw-bold">Ideal Candidate</h6>
+                                                </div>
+                                                <ul class="ps-3 text-muted small mb-0">
+                                                    <li>B.Com/M.Com Graduates</li>
+                                                    <li>Career switchers</li>
+                                                    <li>Students seeking practical skills</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <span class="badge bg-primary-light text-primary me-2">03</span>
+                                                    <h6 class="mb-0 fw-bold">Job Roles</h6>
+                                                </div>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    <span class="badge border text-900 fw-normal">Accountant</span>
+                                                    <span class="badge border text-900 fw-normal">Tax Associate</span>
+                                                    <span class="badge border text-900 fw-normal">Audit Asst.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-primary border-4">
+                                            <i class="fa fa-commenting text-primary me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-primary d-block">Pitch Logic
+                                                </small>
+                                                <span class="text-dark small">"CIAP is a <strong>UK-certified job
+                                                    guarantee
+                                                </strong> for those who want to start earning immediately."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_stage_3 mb-3" invisible="not is_ciap_selected">
+                            <div class="alert alert-info p-0 overflow-hidden border-0 shadow-sm" role="status">
+                                <div class="bg-info-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-info small"/>
+                                        <i class="fa fa-shield me-2 fs-5 text-info"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 3: Trust Building (Day 3–5)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage3_completed"
+                                              class="badge rounded-pill bg-warning-light text-warning border border-warning">
+                                            Pending Trust-Link
+                                        </span>
+                                        <span invisible="not stage3_completed" class="badge rounded-pill bg-success">
+                                            Credibility Established
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage3"
+                                     t-attf-class="collapse {{ stage3_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-users text-primary me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Expert Faculty Pool</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Highlight that CIAP is taught by <strong>Chartered Accountants (CAs)
+                                                </strong> and industry veterans, not just academic teachers.
+                                                    <br/>
+                                                    <em>Action: Share the Faculty Profile PDF/Video.</em>
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-plus-square text-success me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Value-Added Programs</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Mention <strong>Soft Skills training, ERP hands-on, and Mock
+                                                    Interviews.
+                                                </strong> This shows we are serious about their career, not just the
+                                                    certificate.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-start border-start border-info border-4">
+                                            <i class="fa fa-info-circle text-info me-3 fs-4 mt-1"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-info d-block mb-1">Why this
+                                                    stage
+                                                    matters
+                                                </small>
+                                                <span class="text-dark small">
+                                                    Students hesitate on new courses. By Day 3, they need to know <strong>
+                                                    who
+                                                </strong> will teach them. Use the "Faculty Pool" button to send proof
+                                                    of
+                                                    our teaching standards.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_stage_4 mb-3" invisible="not is_ciap_selected">
+                            <div class="alert alert-warning p-0 overflow-hidden border-0 shadow-sm" role="status">
+                                <div class="bg-warning-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage4">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-warning small"/>
+                                        <i class="fa fa-users me-2 fs-5 text-warning"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 4: Social Proof (Day 4–6)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage4_completed"
+                                              class="badge rounded-pill bg-white text-warning border border-warning">
+                                            Waiting
+                                            for Proof-Share
+                                        </span>
+                                        <span invisible="not stage4_completed" class="badge rounded-pill bg-success">
+                                            Fear
+                                            Reduced
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage4"
+                                     t-attf-class="collapse {{ stage4_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-refresh text-warning me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Transformation Stories</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Don't just show certificates; show <strong>Before vs. After</strong>.
+                                                    <br/>
+                                                    <em>Example: "A B.Com graduate who couldn't handle Tally is now
+                                                        managing
+                                                        GST filings in a UK-firm."
+                                                    </em>
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-star text-warning me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Confident Communication</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Even if the program is new, focus on the <strong>institute’s legacy
+                                                </strong> or the <strong>global success of the UK certification</strong> itself.
+                                                    Confident delivery is key.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-warning border-4">
+                                            <i class="fa fa-play-circle text-warning me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-warning d-block">Admission
+                                                    Strategy
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "Share the <strong>Student Testimonials</strong> or <strong>Winners
+                                                    Meet
+                                                </strong> video. Let the candidate see people like themselves
+                                                    succeeding."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_stage_5 mb-3" invisible="not is_ciap_selected">
+                            <div class="alert alert-success p-0 overflow-hidden border-0 shadow-sm"
+                                 style="border-left: 5px solid #198754 !important;" role="status">
+                                <div class="bg-success-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage5">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-success small"/>
+                                        <i class="fa fa-lock me-2 fs-5 text-success"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 5: Outcome + Security (Day
+                                            5–7)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage5_completed"
+                                              class="badge rounded-pill bg-danger-light text-danger border border-danger">
+                                            Critical: Job Fear
+                                        </span>
+                                        <span invisible="not stage5_completed" class="badge rounded-pill bg-success">
+                                            Security Confirmed
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage5"
+                                     t-attf-class="collapse {{ stage5_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-handshake-o text-success me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Job Security Assurance</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Shift from "we have placements" to "we have a **system** to get you
+                                                    hired." Highlight the <strong>Career Starter Kit</strong> and the <strong>
+                                                    Placement Cell's
+                                                </strong> direct links to firms.
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-briefcase text-success me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Tangible Outcome</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Remind them: 1 Exam, 2 Certifications (NSDC + UK), and immediate
+                                                    interview eligibility. They are not buying a course; they are buying
+                                                    an
+                                                    <strong>Entry Ticket to the Industry.</strong>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-success border-4">
+                                            <i class="fa fa-check-square-o text-success me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-success d-block">Closing
+                                                    Script
+                                                    Logic
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "If you follow our <strong>Career Roadmap</strong> and pass the
+                                                    single
+                                                    exam, our placement cell works with you until you are placed. That
+                                                    is
+                                                    the CIAP security."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_stage_6 mb-3" invisible="not is_ciap_selected">
+                            <div class="alert alert-secondary p-0 overflow-hidden border-0 shadow-sm"
+                                 style="background-color: #f3f0ff; border-left: 5px solid #6f42c1 !important;"
+                                 role="status">
+                                <div class="p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer; background-color: #efebff;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-primary small"/>
+                                        <i class="fa fa-university me-2 fs-5" style="color: #6f42c1;"/>
+                                        <strong class="text-uppercase small fw-bold" style="color: #6f42c1;">Stage 6:
+                                            Authority + Support (Day 6–8)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage6_completed"
+                                              class="badge rounded-pill border border-primary text-primary"
+                                              style="background-color: #ffffff;">Reinforce System
+                                        </span>
+                                        <span invisible="not stage6_completed" class="badge rounded-pill bg-success">
+                                            Admission Ready
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage6"
+                                     t-attf-class="collapse {{ stage6_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-certificate me-2" style="color: #6f42c1;"/>
+                                                    <h6 class="mb-0 fw-bold">Repetition of Authority</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    A new course needs 7+ "touches" to be accepted. Re-verify the <strong>
+                                                    UK
+                                                    Certification
+                                                </strong> and <strong>NSDC Approval</strong>. Make them feel this is a
+                                                    globally standardized system, not just a local class.
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-headphones me-2" style="color: #6f42c1;"/>
+                                                    <h6 class="mb-0 fw-bold">Academic Support</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Highlight the <strong>support system</strong>: Doubt clearing
+                                                    sessions,
+                                                    community groups, and the Career Counselling desk. They aren't alone
+                                                    after they pay.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 rounded-3 d-flex align-items-center border-start border-4"
+                                             style="background-color: #f8f9fa; border-color: #6f42c1 !important;">
+                                            <i class="fa fa-graduation-cap me-3 fs-4" style="color: #6f42c1;"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold d-block" style="color: #6f42c1;">
+                                                    Final
+                                                    Support Pitch
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "Most students choose CIAP because we don't just teach; we provide a
+                                                    **complete ecosystem** of support from Day 1 to your first day at
+                                                    the
+                                                    job."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_ciap_stage_7 mb-3" invisible="not is_ciap_selected">
+                            <div class="alert alert-info p-0 overflow-hidden border-0 shadow-sm"
+                                 style="background-color: #e6f7f5; border-left: 5px solid #0891b2 !important;"
+                                 role="status">
+                                <div class="p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer; background-color: #dcfce7;" data-bs-toggle="collapse"
+                                     data-bs-target="#collapseStage7">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-info small"/>
+                                        <i class="fa fa-heart me-2 fs-5" style="color: #0891b2;"/>
+                                        <strong class="text-uppercase small fw-bold" style="color: #0891b2;">Stage 7:
+                                            Personal Connection (Day 7–10)
+                                        </strong>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span invisible="stage7_completed"
+                                              class="badge rounded-pill bg-info text-white">
+                                            Closing Phase
+                                        </span>
+                                        <span invisible="not stage7_completed" class="badge rounded-pill bg-success">
+                                            Lead
+                                            Converted
+                                        </span>
+                                    </div>
+                                </div>
+                                <div id="collapseStage7"
+                                     t-attf-class="collapse {{ stage7_completed == True and '' or 'show' }} bg-white border-top">
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-balance-scale me-2" style="color: #0891b2;"/>
+                                                    <h6 class="mb-0 fw-bold">Competitive Positioning</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Address <strong>CA / ACCA / CMA</strong> comparisons. Frame CIAP not
+                                                    as
+                                                    a rival, but as a <strong>practical skill-bridge</strong> that
+                                                    secures a
+                                                    job in months rather than years.
+                                                </p>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-money me-2" style="color: #0891b2;"/>
+                                                    <h6 class="mb-0 fw-bold">Affordability &amp; ROI</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Shift the talk from "fees" to <strong>"investment."</strong> Remind
+                                                    them
+                                                    that the course cost is typically recovered within the <strong>first
+                                                    3
+                                                    months
+                                                </strong> of their professional salary.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 p-3 rounded-3 d-flex align-items-start border-start border-4"
+                                             style="background-color: #f0fdfa; border-color: #0891b2 !important;">
+                                            <i class="fa fa-coffee me-3 fs-4" style="color: #0891b2;"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold d-block" style="color: #0891b2;">
+                                                    Consultant Mindset
+                                                </small>
+                                                <span class="text-dark small">
+                                                    This is the time for high-touch listening. Clear personal doubts and
+                                                    discuss payment plans. Show them that the <strong>institute is their
+                                                    partner
+                                                </strong> in their professional journey.
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--                    CMA USA -->
+
+                        <div class="o_cma_stage_1 mb-3" invisible="stage1_completed or not is_cma_usa_selected">
+                            <div class="alert alert-primary p-0 overflow-hidden border-0 shadow-sm" role="status">
+
+                                <div class="bg-primary-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#collapseCMAStage1">
+
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-primary small"/>
+                                        <i class="fa fa-compass me-2 fs-5 text-primary"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 1: Attention + Curiosity (Day
+                                            0–1)
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-primary">New Inquiry</span>
+                                        <span class="badge rounded-pill bg-primary-light text-primary border border-primary">
+                                            CMA USA Focus
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="collapseCMAStage1"
+                                     t-attf-class="collapse {{ stage1_completed == True and '' or 'show' }} bg-white border-top">
+
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-globe text-primary me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Global Recognition</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Position the <strong>US CMA</strong> as the gold standard in
+                                                    management
+                                                    accounting. Mention it is recognized in <strong>150+ countries
+                                                </strong> to
+                                                    spark high-level curiosity without over-explaining.
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-bolt text-warning me-2"/>
+                                                    <h6 class="mb-0 fw-bold">The 2-Exam Advantage</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Highlight that a global career is just <strong>2 exams away</strong>.
+                                                    This builds interest by showing a clear, fast path to success
+                                                    compared
+                                                    to local certifications.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-start border-start border-primary border-4">
+                                            <i class="fa fa-lightbulb-o text-primary me-3 fs-4 mt-1"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-primary d-block mb-1">Helpful
+                                                    (Not
+                                                    Pushy) Script
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "Most students choose CMA USA because it offers global mobility with
+                                                    just two exams. I'm sending over a <strong>quick introductory video
+                                                </strong> to show you how it fits your career."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="o_cma_stage_2 mb-3" invisible="stage2_completed or not is_cma_usa_selected">
+                            <div class="alert alert-success p-0 overflow-hidden border-0 shadow-sm" role="status">
+
+                                <div class="bg-success-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#collapseCMAStage2">
+
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-success small"/>
+                                        <i class="fa fa-check-square-o me-2 fs-5 text-success"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 2: Clarity + Understanding
+                                            (Day
+                                            1–3)
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-success">Knowledge Phase</span>
+                                        <span class="badge rounded-pill bg-success-light text-success border border-success">
+                                            Decision Support
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="collapseCMAStage2"
+                                     t-attf-class="collapse {{ stage2_completed == True and '' or 'show' }} bg-white border-top">
+
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-4 border-end-md">
+                                                <div class="d-flex align-items-center mb-2 text-success">
+                                                    <i class="fa fa-info-circle me-2"/>
+                                                    <h6 class="mb-0 fw-bold">What is CMA USA?</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    A management accounting certification from **IMA (USA)** that
+                                                    focuses on
+                                                    financial planning, analysis, and corporate finance. It is the
+                                                    professional equivalent of an MBA in Finance.
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-4 border-end-md">
+                                                <div class="d-flex align-items-center mb-2 text-success">
+                                                    <i class="fa fa-line-chart me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Is it Difficult?</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    With only **2 parts**, it is highly achievable. We provide
+                                                    specialized
+                                                    **mock exams** and **LMS support** to ensure students clear both
+                                                    parts
+                                                    within 6-9 months.
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="d-flex align-items-center mb-2 text-success">
+                                                    <i class="fa fa-trophy me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Is it Worth it?</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    CMA professionals earn significantly more than non-certified peers.
+                                                    It
+                                                    opens doors to **Big 4 firms** and MNCs globally.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-success border-4">
+                                            <i class="fa fa-comments text-success me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-success d-block">Clarity
+                                                    Script
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "Many students worry about the difficulty, but remember: it's just
+                                                    **two
+                                                    parts**. Compared to CA or ACCA, it's the fastest way to get a
+                                                    high-paying international finance role."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_cma_stage_3 mb-3" invisible="stage3_completed or not is_cma_usa_selected">
+                            <div class="alert alert-info p-0 overflow-hidden border-0 shadow-sm"
+                                 style="background-color: #f0f4ff; border-left: 5px solid #3f51b5 !important;"
+                                 role="status">
+
+                                <div class="p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#collapseCMAStage3">
+
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-primary small"/>
+                                        <i class="fa fa-shield me-2 fs-5" style="color: #3f51b5;"/>
+                                        <strong class="text-uppercase small fw-bold" style="color: #3f51b5;">Stage 3:
+                                            Trust
+                                            Building (Day 3–5)
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill" style="background-color: #3f51b5;">Authority
+                                            Phase
+                                        </span>
+                                        <span invisible="not stage3_completed" class="badge rounded-pill bg-success">
+                                            Credibility Verified
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="collapseCMAStage3"
+                                     t-attf-class="collapse {{ stage3_completed == True and '' or 'show' }} bg-white border-top">
+
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-trophy me-2" style="color: #3f51b5;"/>
+                                                    <h6 class="mb-0 fw-bold">Proven Results</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Highlight our **pass percentage** and previous rank holders. Seeing
+                                                    that
+                                                    others have succeeded here removes the "fear of failure" for the
+                                                    student.
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i class="fa fa-id-card-o me-2" style="color: #3f51b5;"/>
+                                                    <h6 class="mb-0 fw-bold">IMA Authorized Training</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Emphasize that our faculty consists of **qualified CMAs and industry
+                                                    experts**. We don't just teach the syllabus; we teach the IMA exam
+                                                    patterns.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4 p-3 rounded-3 d-flex align-items-center border-start border-4"
+                                             style="background-color: #f8faff; border-color: #3f51b5 !important;">
+                                            <i class="fa fa-certificate me-3 fs-4" style="color: #3f51b5;"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold d-block" style="color: #3f51b5;">
+                                                    Authority Logic
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "The reason our pass rate is so high is because we use **official
+                                                    IMA-approved materials** and faculty who have cleared the exams
+                                                    themselves."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="o_cma_stage_4 mb-3" invisible="stage4_completed or not is_cma_usa_selected">
+                            <div class="alert alert-warning p-0 overflow-hidden border-0 shadow-sm" role="status">
+
+                                <div class="bg-warning-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#collapseCMAStage4">
+
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-warning small"/>
+                                        <i class="fa fa-users me-2 fs-5 text-warning"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 4: Social Proof (Day 4–7)
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-warning text-dark">Trust Phase</span>
+                                        <span invisible="not stage4_completed" class="badge rounded-pill bg-success">
+                                            Proof
+                                            Delivered
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="collapseCMAStage4"
+                                     t-attf-class="collapse {{ stage4_completed == True and '' or 'show' }} bg-white border-top">
+
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2 text-warning">
+                                                    <i class="fa fa-play-circle me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Student Success Stories</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Share video testimonials of students who cleared **CMA USA while
+                                                    working** or while doing their **Degree**.
+                                                    Real faces reduce the fear of "Is it possible for me?"
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2 text-warning">
+                                                    <i class="fa fa-certificate me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Parental Confidence</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Highlight stories that focus on **career security** and **global
+                                                    lifestyle**.
+                                                    Parents convert when they see other families benefiting from the
+                                                    Logic-CMA partnership.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-warning border-4">
+                                            <i class="fa fa-group text-warning me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-warning d-block">Emotional
+                                                    Hook
+                                                    Logic
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "Don't just sell a course; sell a **transformation**. Use the
+                                                    'Winners
+                                                    Meet' videos to show the pride on students' faces after passing."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="o_cma_stage_5 mb-3" invisible="stage5_completed or not is_cma_usa_selected">
+                            <div class="alert alert-success p-0 overflow-hidden border-0 shadow-sm"
+                                 style="border-left: 5px solid #198754 !important;" role="status">
+
+                                <div class="bg-success-light p-3 d-flex align-items-center justify-content-between"
+                                     style="cursor: pointer;"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#collapseCMAStage5">
+
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-chevron-down me-3 text-success small"/>
+                                        <i class="fa fa-money me-2 fs-5 text-success"/>
+                                        <strong class="text-uppercase small fw-bold">Stage 5: Outcome Proof (Day 5–8)
+                                        </strong>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-pill bg-danger-light text-danger border border-danger">
+                                            Critical: ROI Phase
+                                        </span>
+                                        <span invisible="not stage5_completed" class="badge rounded-pill bg-success">Job
+                                            Fear Removed
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div id="collapseCMAStage5"
+                                     t-attf-class="collapse {{ stage5_completed == True and '' or 'show' }} bg-white border-top">
+
+                                    <div class="p-4">
+                                        <div class="row g-4">
+                                            <div class="col-12 col-md-6 border-end-md">
+                                                <div class="d-flex align-items-center mb-2 text-success">
+                                                    <i class="fa fa-handshake-o me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Placement Ecosystem</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Do not just show placement photos; explain the **Corporate
+                                                    Tie-ups**.
+                                                    Mention that our graduates are placed in **Big 4s and MNCs** with
+                                                    salary
+                                                    packages that offer immediate ROI.
+                                                </p>
+                                            </div>
+
+                                            <div class="col-12 col-md-6">
+                                                <div class="d-flex align-items-center mb-2 text-success">
+                                                    <i class="fa fa-line-chart me-2"/>
+                                                    <h6 class="mb-0 fw-bold">Salary Appreciation</h6>
+                                                </div>
+                                                <p class="text-muted small">
+                                                    Show how a CMA USA certification acts as a **salary multiplier**.
+                                                    The
+                                                    investment made in the course is typically recovered within the
+                                                    **first
+                                                    few months** of employment.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4 p-3 bg-light rounded-3 d-flex align-items-center border-start border-success border-4">
+                                            <i class="fa fa-briefcase text-success me-3 fs-4"/>
+                                            <div>
+                                                <small class="text-uppercase fw-bold text-success d-block">The "Job"
+                                                    Pitch
+                                                    Logic
+                                                </small>
+                                                <span class="text-dark small">
+                                                    "The biggest risk isn't the fee; it's the **opportunity cost** of
+                                                    not
+                                                    being certified. CMAs are in high demand globally, and our placement
+                                                    cell ensures you are interview-ready from Day 1."
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage1_completed or not is_acca_selected">
+                            <div class="bg-primary text-white p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-rocket me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 1: Attention + Aspiration (Day 0–1)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-100 p-3 me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 45px; height: 45px;">
+                                        <i class="fa fa-star text-primary fs-4"></i>
+                                    </div>
+                                    <h4 class="mb-0 fw-bold text-900">Future-Proof Your Degree</h4>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-link text-success mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">Global + Local</div>
+                                                <div class="text-muted small">Degree + Global Qualification together.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-file-text-o text-warning mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">Fast Track</div>
+                                                <div class="text-muted small">Only 4 papers to become ACCA affiliate.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="not stage1_completed or stage2_completed or not is_acca_selected">
+                            <div class="bg-info text-white p-3 border-bottom d-flex align-items-center"
+                                 style="background-color: #0891b2 !important;">
+                                <i class="fa fa-lightbulb-o me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 2: Clarity (MOST CRITICAL) (Day 1–3)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-100 p-3 me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 45px; height: 45px;">
+                                        <i class="fa fa-info-circle text-info fs-4"></i>
+                                    </div>
+                                    <h4 class="mb-0 fw-bold text-900">The Integrated Advantage</h4>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-minus-circle text-danger mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">9 Paper Exemption</div>
+                                                <div class="text-muted small">Skip basic papers with our program.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-clock-o text-primary mt-1 me-2"/>
+                                            <div>
+                                                <div class="fw-bold text-dark">3-Year Plan</div>
+                                                <div class="text-muted small">Finish ACCA while completing B.Com.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage3_completed or not is_acca_selected">
+                            <div class="bg-dark text-white p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-shield me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 3: Trust (Authority Building) (Day
+                                    3–5)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <h4 class="mb-3 fw-bold text-900">Institute of Choice</h4>
+                                <p class="text-muted">Showcase why Logic is the authority in ACCA coaching.</p>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-trophy text-warning mt-1 me-2"/>
+                                            <div class="fw-bold">Consistent Global Rank Holders</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="d-flex align-items-start">
+                                            <i class="fa fa-users text-primary mt-1 me-2"/>
+                                            <div class="fw-bold">Expert Faculty with Industry Experience</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage4_completed or not is_acca_selected">
+                            <div class="bg-purple text-white p-3 border-bottom d-flex align-items-center"
+                                 style="background-color: #6b21a8 !important;">
+                                <i class="fa fa-comments me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 4: Social Proof (Day 4–6)</strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fa fa-heart text-danger me-2"/>
+                                            <h5 class="mb-0 fw-bold">Build Emotional Trust</h5>
+                                        </div>
+                                        <p class="text-muted small">Crucial for parents: Share testimonials of students
+                                            who
+                                            balanced degree and ACCA successfully.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage5_completed or not is_acca_selected">
+                            <div class="bg-warning text-dark p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-briefcase me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 5: Outcome (Career Proof) (Day 5–7)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <h4 class="mb-2 fw-bold text-900">The Big 4 Destination</h4>
+                                <div class="d-flex align-items-center text-success fw-bold mb-3">
+                                    <i class="fa fa-money me-2"/>
+                                    High ROI Potential
+                                </div>
+                                <p class="text-muted small">Focus on placements in Big 4 accounting firms and
+                                    multinational
+                                    corporations after 3 years.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage6_completed or not is_acca_selected">
+                            <div class="bg-danger text-white p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-balance-scale me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 6: Differentiation (Why Logic?) (Day
+                                    6–8)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white">
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2">
+                                        <i class="fa fa-check-square text-danger me-2"/>
+                                        Complete Career Development, not just coaching.
+                                    </li>
+                                    <li>
+                                        <i class="fa fa-check-square text-danger me-2"/>
+                                        Specialized "Logic Integrated" study materials.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+
+                        <div class="alert alert-success o_warm_alert_animated p-0 overflow-hidden" role="status"
+                             invisible="stage7_completed or not is_acca_selected">
+                            <div class="bg-success text-white p-3 border-bottom d-flex align-items-center">
+                                <i class="fa fa-handshake-o me-2 fs-5"/>
+                                <strong class="text-uppercase small fw-bold">Stage 7: Personal Connection (Day 7–10)
+                                </strong>
+                            </div>
+                            <div class="p-4 bg-white text-center">
+                                <h4 class="fw-bold text-success">Trigger the Decision</h4>
+                                <p class="text-muted">Handle final objections. Compare outcomes. Close the
+                                    registration.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <field name="progress_html" widget="html" nolabel="1" readonly="1"/>
+
+                    <field name="stage1_completed" invisible="1"/>
+                    <field name="stage2_completed" invisible="1"/>
+                    <field name="stage3_completed" invisible="1"/>
+                    <field name="stage4_completed" invisible="1"/>
+                    <field name="stage5_completed" invisible="1"/>
+                    <field name="stage6_completed" invisible="1"/>
+                    <field name="stage7_completed" invisible="1"/>
+
+                    <field name="ciap_roadmap_sent" invisible="1"/>
+                    <field name="ciap_brochure_sent" invisible="1"/>
+                    <field name="detailed_ciap_video_sent" invisible="1"/>
+                    <field name="ciap_demo_class_sent" invisible="1"/>
+                    <field name="ciap_faculty_pool_sent" invisible="1"/>
+                    <field name="ciap_value_added_videos_sent" invisible="1"/>
+                    <field name="ciap_testimonials_sent" invisible="1"/>
+                    <field name="ciap_winners_meet_sent" invisible="1"/>
+                    <field name="ciap_placement_media_sent" invisible="1"/>
+                    <field name="ciap_starter_kit_sent" invisible="1"/>
+                    <field name="ciap_key_benefits_reshared" invisible="1"/>
+                    <field name="ciap_career_counselling_sent" invisible="1"/>
+                    <field name="ciap_assessment_test_sent" invisible="1"/>
+
+                    <notebook>
+                        <page string="Course &amp; Responses" name="course_responses">
+                            <group string="Response History" colspan="2">
+                                <field name="response_ids" nolabel="1" colspan="2" placeholder="Add a response...">
+                                    <tree editable="bottom">
+                                        <field name="comment" required="1"/>
+                                        <field name="response_time"/>
+                                        <field name="user_id" widget="many2one_avatar_user"/>
+                                    </tree>
+                                </field>
+                            </group>
+
+                            <group>
+                                <group string="Course Expected">
+                                    <field name="preferred_course" invisible="source_name != 'Website'"/>
+                                    <field name="course_type"/>
+                                    <field name="course_interested"/>
+                                </group>
+                                <group string="Response &amp; Status">
+                                    <field name="lead_status"/>
+                                    <field name="call_response"/>
+                                    <field name="call_responses" widget="many2many_tags"/>
+                                    <field name="not_response_note" invisible="lead_quality != 'not_responding'"/>
+                                    <field name="updated_remarks" invisible="lead_quality != 'bad_lead'"/>
+                                </group>
+                                <!--                                <group string="Assigned Branch / Batch">-->
+                                <!--                                    <field name="stream" readonly="1"/>-->
+                                <!--                                    <field name="branch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"-->
+                                <!--                                           readonly="state == 'qualified'"/>-->
+                                <!--                                    <field name="course_id" options="{'no_quick_create': True, 'no_create_edit' : True}"-->
+                                <!--                                           readonly="state == 'qualified'"/>-->
+                                <!--                                    <field name="batch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"-->
+                                <!--                                           readonly="state == 'qualified'"/>-->
+                                <!--                                </group>-->
+                                <!--                                <group string="Admission Details">-->
+                                <!--                                    <field name="admission_status" readonly="state == 'qualified'" invisible="1"/>-->
+                                <!--                                    <field name="student_profile_created" invisible="1"/>-->
+
+                                <!--                                    <field name="crash_user_id" invisible="lead_quality != 'crash_lead'"-->
+                                <!--                                           widget="many2one_avatar_user"/>-->
+                                <!--                                    <field name="admission_fee_paid" invisible="1"/>-->
+                                <!--                                    <field name="student_id" invisible="state != 'qualified'" readonly="1"/>-->
+                                <!--                                </group>-->
+                            </group>
+                        </page>
+
+                        <page string="Admission Details" name="admission_details"
+                              invisible="lead_stage_category != 'prospects'">
+
+                            <div class="alert alert-success border-success mb-2" role="status">
+                                <i class="fa fa-info-circle me-2"/>
+                                <strong>Academic Assignment:</strong>
+                                Please ensure the Branch and Batch are correct before moving to Admission.
+                            </div>
+
+                            <group>
+                                <group string="Course Expected" name="course_info">
+                                    <field name="preferred_course" invisible="source_name != 'Website'"/>
+                                    <field name="course_type"/>
+                                    <field name="course_interested"/>
+                                    <field name="stream" readonly="1"/>
+                                </group>
+
+                                <group string="Assigned Branch / Batch" name="batch_info">
+                                    <field name="branch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                           readonly="state == 'qualified'"/>
+                                    <field name="course_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                           readonly="state == 'qualified'"/>
+                                    <field name="batch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                           readonly="state == 'qualified'"/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <group string="Internal Tracking" class="text-success">
+                                    <field name="student_id" invisible="state != 'qualified'" readonly="1"/>
+                                    <field name="crash_user_id" invisible="lead_quality != 'crash_lead'"
+                                           widget="many2one_avatar_user"/>
+
+                                    <field name="admission_status" invisible="1"/>
+                                    <field name="student_profile_created" invisible="1"/>
+                                    <field name="admission_fee_paid" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Lead Info" name="lead_info">
+                            <group>
+                                <group string="Educational Details">
+                                    <field name="title"/>
+                                    <field name="college_name" required="source_name == 'Seminar'"/>
+                                    <field name="last_studied_course"/>
+                                    <field name="academic_year_of_course_attend"/>
+                                    <field name="mode_of_study"/>
+                                </group>
+                                <group string="Source Details">
+                                    <field name="source_name" invisible="1"/>
+                                    <field name="incoming_source_checking" invisible="1"/>
+                                    <field name="digital_lead" invisible="1"/>
+                                    <field name="incoming_source" invisible="incoming_source_checking != 1"/>
+                                    <field name="digital_lead_source" invisible="digital_lead != 1"
+                                           required="digital_lead == 1"/>
+                                    <field name="country"/>
+                                    <field name="district"/>
+                                    <field name="place"/>
+                                    <field name="is_team_leader" invisible="1"/>
+                                    <field name="seminar_lead_id" invisible="1"/>
+                                    <field name="seminar_id" invisible="1"/>
+                                    <field name="sended_welcome_mail" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Dates &amp; Timeline" name="timeline" groups="custom_leads.group_lead_team_lead">
+                            <group>
+                                <group string="Lifecycle Dates">
+                                    <field name="date_of_adding"/>
+                                    <field name="assigned_date"/>
+                                    <field name="reassign_date"/>
+                                    <field name="re_allocation_date"/>
+                                    <field name="last_update_date"/>
+                                    <field name="closing_date" invisible="state != 'deal'"/>
+                                    <field name="admission_date" invisible="state != 'qualified'"
+                                           readonly="is_team_leader == 0"/>
+                                </group>
+                                <group string="Follow-up Dates">
+                                    <field name="next_follow_up_date"/>
+                                    <field widget="badge" name="expected_joining_date"
+                                           invisible="lead_quality not in ['warm','hot']"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Touch Points" name="touch_points" groups="custom_leads.group_lead_team_lead">
+                            <group col="4" colspan="2">
+                                <group col="2">
+                                    <field name="first_call" readonly="1"/>
+                                    <field name="first_call_dt" readonly="1" nolabel="1"/>
+                                </group>
+                                <group col="2">
+                                    <field name="zoom_schedule_dt" readonly="1"/>
+                                </group>
+                                <group col="2">
+                                    <field name="walkin_schedule_dt" readonly="1"/>
+                                </group>
+
+                                <group string="Stage 1 - Media &amp; Webinar" col="2">
+                                    <field name="ciap_media_sent_date" readonly="1" invisible="not ciap_media_sent"/>
+                                    <field name="ciap_media_sent_by" readonly="1" invisible="not ciap_media_sent"/>
+                                    <field name="webinar_invite_sent_on" readonly="1"
+                                           invisible="not webinar_invite_sent"/>
+                                    <field name="webinar_invite_sent_by" readonly="1"
+                                           invisible="not webinar_invite_sent"/>
+                                    <field name="webinar_zoom_link" readonly="1" invisible="not webinar_invite_sent"/>
+                                </group>
+
+                                <group string="Stage 2 - Course Materials" col="2">
+                                    <field name="ciap_roadmap_sent_date" readonly="1"
+                                           invisible="not ciap_roadmap_sent"/>
+                                    <field name="ciap_brochure_sent_date" readonly="1"
+                                           invisible="not ciap_brochure_sent"/>
+                                    <field name="detailed_ciap_video_sent_date" readonly="1"
+                                           invisible="not detailed_ciap_video_sent"/>
+                                    <field name="ciap_demo_class_sent_date" readonly="1"
+                                           invisible="not ciap_demo_class_sent"/>
+                                    <field name="ciap_assessment_test_sent_date" readonly="1"
+                                           invisible="not ciap_assessment_test_sent"/>
+                                </group>
+
+                                <group string="Stage 3 - Trust Building" col="2">
+                                    <field name="ciap_faculty_pool_sent_date" readonly="1"
+                                           invisible="not ciap_faculty_pool_sent"/>
+                                    <field name="ciap_value_added_videos_sent_date" readonly="1"
+                                           invisible="not ciap_value_added_videos_sent"/>
+                                </group>
+
+                                <group string="Stage 4 - Social Proof" col="2">
+                                    <field name="ciap_testimonials_sent_date" readonly="1"
+                                           invisible="not ciap_testimonials_sent"/>
+                                    <field name="ciap_winners_meet_sent_date" readonly="1"
+                                           invisible="not ciap_winners_meet_sent"/>
+                                </group>
+
+                                <group string="Stage 5 - Outcome &amp; Security" col="2">
+                                    <field name="ciap_placement_media_sent_date" readonly="1"
+                                           invisible="not ciap_placement_media_sent"/>
+                                </group>
+
+                                <group string="Stage 6 - Authority &amp; Support" col="2">
+                                    <field name="ciap_starter_kit_sent_date" readonly="1"
+                                           invisible="not ciap_starter_kit_sent"/>
+                                    <field name="ciap_key_benefits_reshared_date" readonly="1"
+                                           invisible="not ciap_key_benefits_reshared"/>
+                                </group>
+
+                                <group string="Stage 7 - Personal Connection" col="2">
+                                    <field name="ciap_career_counselling_sent_date" readonly="1"
+                                           invisible="not ciap_career_counselling_sent"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="History" name="history" colspan="2" groups="custom_leads.group_lead_team_lead">
+                            <group string="Assignment History" colspan="2">
+                                <field name="assignment_history_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom" create="0" delete="0">
+                                        <field name="assigned_date" readonly="1"/>
+                                        <field name="owner_id" readonly="1" widget="many2one_avatar_user"/>
+                                        <field name="assigned_by" readonly="1" widget="many2one_avatar_user"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Lead Quality History" colspan="2" groups="custom_leads.group_lead_team_lead">
+                                <field name="quality_history_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom" create="0" delete="0">
+                                        <field name="change_date" readonly="1"/>
+                                        <field name="lead_quality" readonly="1"/>
+                                        <field name="user_id" readonly="1" widget="many2one_avatar_user"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Call Record" colspan="2">
+                                <field name="call_log_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom">
+                                        <field name="call_time" readonly="1"/>
+                                        <field name="user_id" readonly="1" widget="many2one_avatar_user"/>
+                                        <field name="call_type" readonly="1"/>
+                                        <field name="caller_number" readonly="1"/>
+                                        <field name="duration" readonly="1"/>
+                                        <field name="call_status" readonly="1"/>
+                                        <field name="recording_url" widget="url" readonly="1"/>
+                                        <field name="remarks"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+
+                        <page string="Lost Reason" name="lost_reason" invisible="state != 'lost'">
+                            <group>
+                                <field name="lost_reason"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="logic_leads_kanban_view_odoo" model="ir.ui.view">
+        <field name="name">leads.logic.kanban</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="lead_quality" default_order="date_of_adding desc"
+                    archivable="false" sample="1" quick_create="0">
+                <field name="lead_quality" default_order="lead_quality"/>
+                <progressbar field="lead_quality"
+                             colors='{"new": "primary", "waiting_for_admission": "info", "admission": "success", "bad_lead": "danger", "cold":"warning", "hot":"secondary", "warm":"secondary"}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_content oe_kanban_global_click" class="o_kanban_box">
+                            <div>
+                                <strong class="o_kanban_record_title">
+                                    <span>
+                                        <b>Name :</b>
+                                        <field name="name"/>
+                                        <br/>
+                                    </span>
+                                </strong>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <span>
+                                    <b>Source :</b>
+                                    <field name="leads_source"/>
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Mobile :</b>
+                                    <field name="phone_number" widget="phone" class="hover-field-value"/>
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Lead Owner :</b>
+                                    <field name="lead_owner"/>
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Response :</b>
+                                    <span class="hover-text">
+                                        <field name="truncated_call_response"/>
+                                        <span class="full-response">
+                                            <field name="call_response"/>
+                                        </span>
+                                    </span>
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Follow Up Date:</b>
+                                    <field name="next_follow_up_date" widget="badge"/>
+                                    <br/>
+                                </span>
+                            </div>
+                            <div class="o_kanban_record_bottom d-flex justify-content-between">
+                                <div>
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="lead_owner" widget="many2one_avatar_employee"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="leads_logic_search_view" model="ir.ui.view">
+        <field name="name">leads.logic.search.view</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Today's Leads" name="today" domain="[('date_of_adding', '=', context_today())]"/>
+                <filter string="Prev Month" name="prev_month"
+                        domain="[('date_of_adding','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-%%m-01')),('date_of_adding','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter string="Current Month" name="current_month"
+                        domain="[('date_of_adding','>=',time.strftime('%%Y-%%m-01')),('date_of_adding','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"/>
+                <filter string="Current Week" name="current_week"
+                        domain="[('date_of_adding', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('date_of_adding', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
+
+                <field name="reference_no" string="Reference"/>
+                <field name="phone_number" string="Mobile Number"/>
+                <field name="leads_source" string="Lead Source"/>
+                <field name="lead_quality" string="Lead Quality"/>
+                <field name="name" string="Lead Name"/>
+                <field name="college_name" string="College"/>
+                <field name="phone_number_second" string="Alternate Mobile Number"/>
+                <field name="course_id" string="Course"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="leads_logic_search_view_admission" model="ir.ui.view">
+        <field name="name">leads.logic.search.admission.view</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Today's Admission" name="today" domain="[('admission_date', '=', context_today())]"/>
+                <filter string="Prev Month" name="prev_month"
+                        domain="[('admission_date','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-%%m-01')),('admission_date','&lt;',time.strftime('%%Y-%%m-01'))]"/>
+                <filter string="Current Month" name="current_month"
+                        domain="[('admission_date','>=',time.strftime('%%Y-%%m-01')),('admission_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"/>
+                <filter string="Current Week" name="current_week"
+                        domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
+
+                <field name="reference_no" string="Reference"/>
+                <field name="phone_number" string="Mobile Number"/>
+                <field name="leads_source" string="Lead Source"/>
+                <field name="lead_quality" string="Lead Quality"/>
+                <field name="name" string="Lead Name"/>
+                <field name="college_name" string="College"/>
+                <field name="phone_number_second" string="Alternate Mobile Number"/>
+                <field name="course_id" string="Course"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_leads_logic_search" model="ir.ui.view">
+        <field name="name">leads.logic.search</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <search string="Search Leads">
+                <field name="name"/>
+                <field name="lead_quality"/>
+                <filter string="Lead Quality" name="lead_quality_filter" context="{'group_by': 'lead_quality'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_lead_followup_wizard_form" model="ir.ui.view">
+        <field name="name">lead.followup.wizard.form</field>
+        <field name="model">lead.followup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Follow-Up">
+                <group>
+                    <field name="next_followup_date"/>
+                    <field name="remarks"/>
+                </group>
+                <footer>
+                    <button name="action_save_followup" string="Save" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_webinar_invite_wizard_form" model="ir.ui.view">
+        <field name="name">webinar.invite.wizard.form</field>
+        <field name="model">webinar.invite.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Free Webinar Invite">
+                <group>
+                    <field name="lead_id" invisible="1"/>
+                    <field name="zoom_link" placeholder="https://zoom.us/j/123456789"/>
+                    <field name="webinar_date" placeholder="20 April 2026, 7:00 PM"/>
+                </group>
+                <footer>
+                    <button name="action_send_whatsapp" string="Send" type="object" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lead_followup_tree" model="ir.ui.view">
+        <field name="name">lead.followup.tree</field>
+        <field name="model">lead.followup</field>
+        <field name="arch" type="xml">
+            <tree string="Follow-Up">
+                <field name="lead_id"/>
+                <field name="next_followup_date"/>
+                <field name="phone_number" readonly="1"/>
+                <field name="remarks"/>
+                <field name="status"/>
+                <field name="user_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_course_fee_structure_tree" model="ir.ui.view">
+        <field name="name">course.fee.structure.tree</field>
+        <field name="model">course.fee.structure</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="course_name"/>
+                <field name="level"/>
+                <field name="duration"/>
+                <field name="amount"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_course_fee_structure_form" model="ir.ui.view">
+        <field name="name">course.fee.structure.form</field>
+        <field name="model">course.fee.structure</field>
+        <field name="arch" type="xml">
+            <form string="Course Fee Structure">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="level"/>
+                            <field name="duration"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="image" widget="image" readonly="1" class="oe_avatar"
+                                   options="{'preview_image': 'image', 'size': [256, 256]}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lead_export_history_tree" model="ir.ui.view">
+        <field name="name">lead.export.history.tree</field>
+        <field name="model">lead.export.history</field>
+        <field name="arch" type="xml">
+            <tree string="Export Logs" create="false" edit="false" delete="false">
+                <field name="export_date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="record_count"/>
+                <field name="exported_fields"/>
+                <field name="ip_address"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lead_open_history_tree_audit" model="ir.ui.view">
+        <field name="name">lead.open.history.tree.audit</field>
+        <field name="model">lead.open.history</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Access History" create="0" edit="0" delete="0">
+                <field name="opened_on" string="Time of Access"/>
+                <field name="lead_id" string="Lead Reference"/>
+                <field name="user_id" widget="many2one_avatar_user" string="User"/>
+                <field name="ip_address" string="IP Address"/>
+                <field name="remarks" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+<!--    <record id="view_lead_open_history_tree_audit" model="ir.ui.view">-->
+<!--        <field name="name">lead.open.history.tree.audit</field>-->
+<!--        <field name="model">lead.open.history</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <tree string="Lead Access History" create="0" edit="0" delete="0">-->
+<!--                <field name="opened_on" string="Time of Access"/>-->
+<!--                <field name="lead_id" string="Lead Reference"/>-->
+<!--                <field name="user_id" widget="many2one_avatar_user" string="User"/>-->
+<!--                <field name="ip_address" string="IP Address"/>-->
+<!--                <field name="remarks" optional="show"/>-->
+<!--            </tree>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record id="view_lead_open_history_tree_audit" model="ir.ui.view">
+        <field name="name">lead.open.history.tree.audit</field>
+        <field name="model">lead.open.history</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Access History" create="0" edit="0" delete="0">
+                <field name="opened_on" string="Time of Access"/>
+                <field name="lead_id" string="Lead Reference"/>
+                <field name="user_id" widget="many2one_avatar_user" string="User"/>
+                <field name="ip_address" string="IP Address"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_lead_export_history" model="ir.actions.act_window">
+        <field name="name">Export Audit Logs</field>
+        <field name="res_model">lead.export.history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_lead_access_audit_log" model="ir.actions.act_window">
+        <field name="name">Lead Access Audit</field>
+        <field name="res_model">lead.open.history</field>
+        <field name="view_mode">tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No access logs recorded yet.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lead_audit_root"
+              name="🕵️ Audit Logs"
+              parent="leads_main_menu"
+              sequence="100"
+              groups="custom_leads.group_super_admin"/>
+
+    <menuitem id="menu_lead_super_admin_audit"
+              name="Lead Access Audit"
+              parent="menu_lead_audit_root"
+              action="action_lead_access_audit_log"
+              sequence="10"/>
+
+    <menuitem id="menu_lead_export_audit"
+              name="Export Audit"
+              parent="menu_lead_audit_root"
+              action="action_lead_export_history"
+              sequence="20"/>
+
+    <!--    <record id="view_lead_open_history_tree" model="ir.ui.view">-->
+    <!--        <field name="name">lead.open.history.tree</field>-->
+    <!--        <field name="model">lead.open.history</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <tree>-->
+    <!--                <field name="opened_on"/>-->
+    <!--                <field name="lead_id"/>-->
+    <!--                <field name="user_id"/>-->
+    <!--                <field name="remarks"/>-->
+    <!--            </tree>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+    <record model="ir.actions.act_window" id="action_leads_main_action">
+        <field name="name">Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '!=', 1), ('lead_quality', 'not in', ['admission',
+            'waiting_for_admission'])]
+        </field>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_results_highlights_action">
+        <field name="name">Results High Lights</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('whatsapp_intro','=',True),('results_highlights','=',False)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_crash_leads_main_action">
+        <field name="name">Crash Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1)]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_crash_leads_admission_main_action">
+        <field name="name">Crash Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1),('lead_quality', '=', 'admission')]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_crash_waiting_for_admission_main_action">
+        <field name="name">Crash Waiting for Admission</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1),('lead_quality', '=', 'waiting_for_admission')]</field>
+    </record>
+
+    <record id="action_list_view_of_admission" model="ir.actions.act_window">
+        <field name="name">Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('lead_quality', '=', 'admission'),('crash_lead', '!=', 1)]</field>
+        <field name="view_id" ref="custom_leads.list_view_of_admission"/>
+        <field name="search_view_id" ref="custom_leads.leads_logic_search_view_admission"/>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record id="action_list_view_of_waiting_for_admission" model="ir.actions.act_window">
+        <field name="name">Waiting for Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('lead_quality', '=', 'waiting_for_admission'),('crash_lead', '!=', 1)]</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="lead_activity_view_action">
+        <field name="name">Leads Activity</field>
+        <field name="res_model">mail.activity</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('res_model', '=', 'leads.logic')]</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_leads_sources_main_action">
+        <field name="name">Leads Sources</field>
+        <field name="res_model">leads.sources</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_lead_followup" model="ir.actions.act_window">
+        <field name="name">Follow Ups</field>
+        <field name="res_model">lead.followup</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_leads_new_action">
+        <field name="name">Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('lead_quality', '=', 'new'), ('crash_lead', '!=', True)]</field>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_leads_cold_action">
+        <field name="name">Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('lead_quality', '=', 'cold'), ('crash_lead', '!=', True)]</field>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_leads_hot_action">
+        <field name="name">Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('lead_quality', '=', 'hot'), ('crash_lead', '!=', True)]</field>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <!--    <record id="action_lead_open_history" model="ir.actions.act_window">-->
+    <!--        <field name="name">Lead Open History</field>-->
+    <!--        <field name="res_model">lead.open.history</field>-->
+    <!--        <field name="view_mode">tree,form</field>-->
+    <!--        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>-->
+    <!--    </record>-->
+
+    <record id="action_lead_call_log_today" model="ir.actions.act_window">
+        <field name="name">Today's Call Logs</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('call_time','&gt;=',context_today().strftime('%Y-%m-%d 00:00:00')),('call_time','&lt;=',context_today().strftime('%Y-%m-%d
+            23:59:59'))]
+        </field>
+    </record>
+
+    <record id="ir_sequence_leads_logic" model="ir.sequence">
+        <field name="name">Leads Sequence</field>
+        <field name="code">leads.logic</field>
+        <field name="prefix">LS</field>
+        <field name="padding">3</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="action_check_and_open_leads" model="ir.actions.server">
+        <field name="name">Check Follow-ups and Open Leads</field>
+        <field name="model_id" ref="custom_leads.model_leads_logic"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Get today's date range (datetime)
+today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+today_end = datetime.datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+today_date = datetime.date.today()
+user = env.user
+
+# 1. Search for SCHEDULED follow-ups for TODAY assigned to current user
+followup_domain = [
+    ('user_id', '=', user.id),
+    ('status', '=', 'scheduled'),
+    ('next_followup_date', '>=', today_start),
+    ('next_followup_date', '<=', today_end)
+]
+followups = env['lead.followup'].search(followup_domain)
+lead_ids = set(followups.mapped('lead_id').ids)
+
+# 2. Search for leads where the main 'next_follow_up_date' field is TODAY
+employee_id = False
+if user.employee_id:
+    employee_id = user.employee_id.id
+elif user.employee_ids:
+    employee_id = user.employee_ids[0].id
+
+domain_main = [('next_follow_up_date', '=', today_date)]
+
+if employee_id:
+    domain_main.extend(['|', ('lead_owner', '=', employee_id), ('tele_caller_id', '=', user.id)])
+else:
+    domain_main.append(('tele_caller_id', '=', user.id))
+
+leads_main = env['leads.logic'].search(domain_main)
+lead_ids.update(leads_main.ids)
+
+all_lead_ids = list(lead_ids)
+lead_count = len(all_lead_ids)
+
+if lead_count > 0:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': f"Today's Follow-ups ({lead_count})",
+        'res_model': 'leads.logic',
+        'view_mode': 'tree,form',
+        'domain': [('id', 'in', all_lead_ids)],
+        'target': 'current',
+        'context': env.context,
+    }
+else:
+    action = env.ref('custom_leads.action_leads_main_action').read()[0]
+action
+        ]]></field>
+    </record>
+
+    <record id="view_leads_pivot" model="ir.ui.view">
+        <field name="name">leads.logic.pivot</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <pivot string="Lead Analysis" disable_linking="True">
+                <field name="lead_owner" type="row"/>
+                <field name="lead_quality" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_leads_graph" model="ir.ui.view">
+        <field name="name">leads.logic.graph</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <graph string="Lead Analysis" type="bar">
+                <field name="lead_owner"/>
+                <field name="lead_quality"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_leads_dashboard_search" model="ir.ui.view">
+        <field name="name">leads.logic.dashboard.search</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <search string="Dashboard Analysis">
+                <field name="lead_owner"/>
+                <field name="lead_quality"/>
+                <filter string="Admission Officer" name="group_by_lead_owner" context="{'group_by':'lead_owner'}"/>
+                <filter string="Lead Quality" name="group_by_lead_quality" context="{'group_by':'lead_quality'}"/>
+                <filter string="Created On" name="group_by_create_date" context="{'group_by':'create_date'}"/>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="action_lead_dashboard" model="ir.actions.act_window">
+        <field name="name">Lead Dashboard</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">pivot,graph,tree,form</field>
+        <field name="view_id" ref="view_leads_pivot"/>
+        <field name="search_view_id" ref="view_leads_dashboard_search"/>
+        <field name="context">{'search_default_group_by_lead_owner': 1}</field>
+    </record>
+
+    <menuitem id="leads_main_menu" name="Leads" web_icon="custom_leads,static/description/icon.png"/>
+
+    <menuitem id="leads_sub_menu" name="Leads" parent="leads_main_menu" sequence="1" action="action_leads_main_action"
+              groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"/>
+
+    <menuitem id="crash_leads_sub_menu" name="Crash Leads" parent="leads_main_menu" sequence="2"
+              action="action_crash_leads_main_action"
+              groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem id="crash_waiting_for_admission_sub_menu" name="Crash Waiting for Admission" parent="leads_main_menu"
+              sequence="4" action="action_crash_waiting_for_admission_main_action"
+              groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem id="crash_admission_sub_menu" name="Crash Admission" parent="leads_main_menu" sequence="4"
+              action="action_crash_leads_admission_main_action"
+              groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem id="leads_activity_menu" name="Tasks" parent="leads_main_menu" sequence="10"
+              action="lead_activity_view_action"/>
+
+    <menuitem id="leads_waiting_for_admission_menu" name="Waiting for Admission" parent="leads_main_menu" sequence="4"
+              groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"
+              action="action_list_view_of_waiting_for_admission"/>
+
+    <menuitem id="leads_admission_menu" name="Admission" parent="leads_main_menu" sequence="5"
+              groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"
+              action="action_list_view_of_admission"/>
+
+    <menuitem id="results_highlights_admission_menu" name="Results High Lights" parent="leads_main_menu" sequence="5"
+              groups="custom_leads.group_lead_digital_head" action="action_results_highlights_action"/>
+
+    <menuitem id="menu_lead_followup_root" name="Follow Ups" parent="leads_main_menu" sequence="30"
+              action="action_lead_followup"/>
+
+    <menuitem id="menu_lead_quality_root" name="🎯 Lead Quality" parent="leads_main_menu" sequence="90"/>
+    <menuitem id="menu_lead_quality_new" name="🆕  New" parent="menu_lead_quality_root" sequence="1"
+              action="action_leads_new_action"/>
+    <menuitem id="menu_lead_quality_hot" name="🔥  Hot" parent="menu_lead_quality_root" sequence="4"
+              action="action_leads_hot_action"/>
+    <menuitem id="menu_lead_quality_cold" name="❄️  Cold" parent="menu_lead_quality_root" sequence="5"
+              action="action_leads_cold_action"/>
+
+    <!--    <menuitem id="menu_lead_open_history" name="Lead Open History" parent="leads_main_menu" action="action_lead_open_history" groups="base.group_system" sequence="40"/>-->
+
+    <menuitem id="leads_configuration_menu" name="Configuration" parent="leads_main_menu"
+              action="action_leads_sources_main_action" groups="custom_leads.group_lead_team_lead" sequence="10"/>
+
+    <menuitem id="menu_lead_dashboard" name="📊 Lead Dashboard" parent="leads_main_menu" sequence="1"
+              action="action_lead_dashboard"
+              groups="custom_leads.group_lead_users,custom_leads.group_lead_manager,custom_leads.group_lead_team_lead"/>
+
+</odoo>

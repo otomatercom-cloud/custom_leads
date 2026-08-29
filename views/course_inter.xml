@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<!-- Tree View -->
+<record id="view_course_interested_tree" model="ir.ui.view">
+    <field name="name">course.interested.tree</field>
+    <field name="model">course.interested</field>
+    <field name="arch" type="xml">
+        <tree string="Course Interested">
+            <field name="name"/>
+        </tree>
+    </field>
+</record>
+
+<!-- Form View -->
+<record id="view_course_interested_form" model="ir.ui.view">
+    <field name="name">course.interested.form</field>
+    <field name="model">course.interested</field>
+    <field name="arch" type="xml">
+        <form string="Course Interested">
+            <sheet>
+                <group>
+                    <field name="name"/>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<!-- Action -->
+<record id="action_course_interested" model="ir.actions.act_window">
+    <field name="name">Course Interested</field>
+    <field name="res_model">course.interested</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<!-- Menu -->
+<menuitem id="menu_course_interested"
+          name="Course Interested"
+          parent="leads_configuration_menu"
+          action="action_course_interested"
+          sequence="20"
+          groups="custom_leads.group_lead_team_lead,custom_leads.group_super_admin"/>
+</odoo>

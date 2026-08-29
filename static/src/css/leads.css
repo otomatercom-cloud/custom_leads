@@ -1,0 +1,168 @@
+.hover-text {
+        position: relative;
+        display: inline-block;
+    }
+
+    .full-response {
+        display: none;
+        position: absolute;
+        background: #fff;
+        padding: 5px;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    .hover-text:hover .full-response {
+        display: inline-block;
+    }
+.o_form_required .o_input,
+.o_form_required .o_field_widget {
+border: none !important;
+ border-bottom: 1px solid red !important;
+ border-radius: 0 !important;
+ box-shadow: none !important;
+}
+
+.hover-container:hover .hover-default {
+    visibility: hidden; /* Hide 'Phone' text on hover */
+    opacity: 0;
+}
+.odoo-red-text {
+    color: #d9534f !important;
+}
+.o_form_label.label-red {
+    color: red !important;
+}
+
+
+.hover-container:hover .hover-field-value {
+    visibility: visible; /* Show the phone number on hover */
+    opacity: 1;
+}
+.o_list_view tbody td.admission-amount {
+    background-color: #f7fafa !important; /* Change to your preferred color */
+    font-weight: bold;
+}
+.o_form_view .o_form_label[for="name"] {
+    color: red !important;
+}
+
+.btn-connected {
+    background-color: #a6f283;
+    width: 170px;
+    height: 40px;
+    font-size: 14px;
+    text-align: center;
+    position: absolute;
+    right: 25px;
+   }
+
+                    .btn-not-connected {
+                    background-color: #f58667;
+                    color: white;
+                    width: 170px;
+                    height: 40px;
+                    font-size: 14px;
+                    text-align: center;
+                    }
+                    .btn-convert {
+                    background-color: #347512;
+                    color:white;
+
+                    }
+                    .btn-waiting-for-admission {
+                    background-color: #64568f;
+                    color:white;
+
+                    }
+                    .btn-lost {
+                    background-color: #db350f;
+                    color:white;
+
+                    }
+.o_progress_info {
+    background-color: #17a2b8 !important; /* Info blue */
+}
+.o_progress_primary {
+    background-color: #007bff !important; /* Primary blue */
+}
+.o_progress_success {
+    background-color: #28a745 !important; /* Success green */
+}
+.o_progress_danger {
+    background-color: #dc3545 !important; /* Danger red */
+}
+.o_progress_warning {
+    background-color: #ffc107 !important; /* Warning yellow */
+}
+.o_progress_light {
+    background-color: #f8f9fa !important; /* Light grey */
+}
+.o_progress_dark {
+    background-color: #343a40 !important; /* Dark grey */
+}
+.o_progress_secondary {
+    background-color: #6c757d !important; /* Secondary grey */
+}
+.o_progress_muted {
+    background-color: #e9ecef !important; /* Muted grey */
+}
+.btn-call-back {
+                    background-color: #b5c1f7;
+                    width: 120px;
+                    height: 40px;
+                    font-size: 14px;
+                    text-align: center;
+                    }
+.o_badge.o_badge_bf {
+        background-color: #ff0000;
+        color: white;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .o_badge.o_badge_warning {
+        background-color: #ffff00;
+        color: black;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .o_badge.o_badge_success {
+        background-color: #00ff00;
+        color: black;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .o_badge.o_badge_info {
+        background-color: #00ffff;
+        color: black;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .o_badge.o_badge_danger {
+        background-color: #ff4040;
+        color: white;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        padding: 0;
+        display: inline-block;
+        vertical-align: middle;
+    }

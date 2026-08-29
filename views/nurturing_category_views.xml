@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Add Student Category to the lead form, right next to Academic Year -->
+    <record id="form_view_leads_logic_nurturing" model="ir.ui.view">
+        <field name="name">leads.logic.view.form.nurturing</field>
+        <field name="model">leads.logic</field>
+        <field name="inherit_id" ref="form_view_leads_logic"/>
+        <field name="arch" type="xml">
+            <field name="academic_year" required="1" position="after">
+                <field name="student_category" widget="selection"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Add Student Category to the tree view as an optional column -->
+    <record id="tree_view_leads_logic_nurturing" model="ir.ui.view">
+        <field name="name">leads.logic.view.tree.nurturing</field>
+        <field name="model">leads.logic</field>
+        <field name="inherit_id" ref="tree_view_leads_logic"/>
+        <field name="arch" type="xml">
+            <field name="source_campaign_id" position="after">
+                <field name="student_category" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Add Student Category filter + group-by to the main search view -->
+    <record id="view_leads_logic_search_nurturing" model="ir.ui.view">
+        <field name="name">leads.logic.search.nurturing</field>
+        <field name="model">leads.logic</field>
+        <field name="inherit_id" ref="view_leads_logic_search"/>
+        <field name="arch" type="xml">
+            <field name="lead_quality" position="after">
+                <field name="student_category"/>
+            </field>
+            <filter name="lead_quality_filter" position="after">
+                <filter string="Student Category" name="student_category_filter"
+                        context="{'group_by': 'student_category'}"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

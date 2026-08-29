@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================== Lead Team: Tree ===================== -->
+    <record id="view_lead_team_tree" model="ir.ui.view">
+        <field name="name">lead.team.tree</field>
+        <field name="model">lead.team</field>
+        <field name="arch" type="xml">
+            <tree string="Teams" decoration-muted="not active">
+                <field name="name"/>
+                <field name="team_lead_ids" widget="many2many_tags"/>
+                <field name="member_count"/>
+                <field name="lead_count"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===================== Lead Team: Kanban ===================== -->
+    <record id="view_lead_team_kanban" model="ir.ui.view">
+        <field name="name">lead.team.kanban</field>
+        <field name="model">lead.team</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="team_lead_ids"/>
+                <field name="member_count"/>
+                <field name="lead_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click p-3">
+                            <strong><field name="name"/></strong>
+                            <div class="text-muted">
+                                <span>Team Leads: </span>
+                                <field name="team_lead_ids" widget="many2many_tags"/>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge badge-pill badge-info">
+                                    <field name="member_count"/> Members
+                                </span>
+                                <span class="badge badge-pill badge-secondary">
+                                    <field name="lead_count"/> Leads
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ===================== Lead Team: Form ===================== -->
+    <record id="view_lead_team_form" model="ir.ui.view">
+        <field name="name">lead.team.form</field>
+        <field name="model">lead.team</field>
+        <field name="arch" type="xml">
+            <form string="Team">
+                <header/>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_members" type="object" class="oe_stat_button" icon="fa-users">
+                            <field name="member_count" widget="statinfo" string="Members"/>
+                        </button>
+                        <button name="action_view_leads" type="object" class="oe_stat_button" icon="fa-bullhorn">
+                            <field name="lead_count" widget="statinfo" string="Leads"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Kochi Admissions Team"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="team_lead_ids" widget="many2many_tags"
+                                   placeholder="Select one or more Team Leads..."/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Team Members" name="members">
+                            <button name="action_bulk_assign_members" type="object"
+                                    string="Bulk Assign Officers" class="btn-primary mb-2"/>
+                            <field name="member_ids" create="false" delete="false">
+                                <tree editable="false">
+                                    <field name="name"/>
+                                    <field name="login"/>
+                                    <field name="is_admission_officer" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================== Lead Team: Action ===================== -->
+    <record id="action_lead_team" model="ir.actions.act_window">
+        <field name="name">Teams</field>
+        <field name="res_model">lead.team</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Admission Team
+            </p>
+            <p>
+                Group Admission Officers into Teams and assign one or more Team Leads.
+                Each Team Lead will only be able to view the leads belonging to officers
+                in their own team(s).
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lead_team_root" name="Teams" parent="leads_main_menu" sequence="9"
+              action="action_lead_team"
+              groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_branch_head,custom_leads.group_super_admin"/>
+
+    <!-- ===================== Admission Officers list (for bulk team assignment) ===================== -->
+    <record id="view_admission_officers_tree" model="ir.ui.view">
+        <field name="name">res.users.admission.officers.tree</field>
+        <field name="model">res.users</field>
+        <field name="arch" type="xml">
+            <tree string="Admission Officers" editable="bottom" multi_edit="1">
+                <field name="name"/>
+                <field name="login" optional="hide"/>
+                <field name="admission_team_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_admission_officers" model="ir.actions.act_window">
+        <field name="name">Admission Officers</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_admission_officers_tree"/>
+        <field name="domain">[('groups_id', 'in', [ref('custom_leads.group_lead_users')])]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p>
+                Select multiple rows and edit the <b>Admission Team</b> column to bulk-assign
+                officers to a team in one action, or use the "Assign to Team" action below.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_admission_officers" name="Admission Officers" parent="leads_main_menu" sequence="9"
+              action="action_admission_officers"
+              groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_branch_head,custom_leads.group_super_admin"/>
+
+</odoo>

@@ -1,0 +1,68 @@
+<odoo>
+
+    <record id="view_lead_campaign_template_tree" model="ir.ui.view">
+        <field name="name">lead.campaign.template.tree</field>
+        <field name="model">lead.campaign.template</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="name"/>
+                <field name="campaign_course_id"/>
+                <field name="stage"/>
+                <field name="sequence"/>
+                <field name="title"/>
+                <field name="media_url"/>
+                <field name="whatsapp_message"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lead_campaign_template_form" model="ir.ui.view">
+        <field name="name">lead.campaign.template.form</field>
+        <field name="model">lead.campaign.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="campaign_course_id"/>
+                            <field name="stage"/>
+                            <field name="sequence"/>
+                            <field name="title"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="media_url"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="whatsapp_message" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lead_campaign_template" model="ir.actions.act_window">
+        <field name="name">Course Campaign Templates</field>
+        <field name="res_model">lead.campaign.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="groups_id" eval="[(4, ref('custom_leads.group_lead_campaign_manager'))]"/>
+    </record>
+
+    <menuitem id="menu_lead_campaign_root"
+          name="Lead Campaigns"
+          parent="leads_main_menu"
+          sequence="90"
+          groups="custom_leads.group_lead_campaign_manager"/>
+
+<menuitem id="menu_lead_campaign_templates"
+          name="Course Campaign Templates"
+          parent="menu_lead_campaign_root"
+          action="action_lead_campaign_template"
+          sequence="1"
+          groups="custom_leads.group_lead_campaign_manager"/>
+
+</odoo>

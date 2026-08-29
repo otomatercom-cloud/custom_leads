@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_leads_todays_followup_wizard_form" model="ir.ui.view">
+        <field name="name">leads.todays.followup.wizard.form</field>
+        <field name="model">leads.todays.followup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Today's Follow-ups Here">
+                <style>
+                    .big-text { font-size: 18px; font-weight: bold; color: #2C3E50; margin-bottom: 20px; display: block; }
+                </style>
+                <div class="text-center big-text" style="width: 100%; text-align: center;">
+                    You have <field name="count" readonly="1" class="oe_inline"/> leads to follow up today!
+                </div>
+                <group>
+                    <field name="lead_ids" nolabel="1" readonly="1">
+                        <tree create="0" delete="0" edit="0" decoration-info="lead_quality == 'new'" decoration-success="lead_quality == 'admission'">
+                            <field name="name"/>
+                            <field name="phone_number" widget="phone"/>
+                            <field name="lead_quality"/>
+                            <field name="call_response"/>
+                            <field name="last_update_date"/>
+                            <!-- Assuming you can open the record by clicking the row in readonly tree -->
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                     <button name="action_open_leads_main" string="View These Leads" type="object" class="btn-primary"/>
+                     <button string="Close" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

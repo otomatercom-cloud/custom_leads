@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_leads_confirm_wizard_form" model="ir.ui.view">
+        <field name="name">leads.confirm.wizard.form</field>
+        <field name="model">leads.confirm.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Open Lead?">
+                 <div class="text-center">
+                    <h3>Are you sure you want to open this lead?</h3>
+                </div>
+                
+                <!-- Full Width Alert for Today's Follow-up -->
+                <div invisible="not today_followup_message" style="width:100%; margin-bottom:10px;">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" style="margin-bottom:0px;">
+                        <div style="flex-grow: 1;">
+                            <strong>🔔 Today's Follow-up:</strong>
+                            <field name="today_followup_message" readonly="1" nolabel="1"/>
+                        </div>
+                        <button name="action_dismiss_message" icon="fa-times" type="object" class="btn btn-sm btn-link text-danger" title="Dismiss" confirm="Dismiss this message?"/>
+                    </div>
+                </div>
+
+                    <group>
+                        <field name="name"/>
+<!--                        <field name="phone_number"/>-->
+                        <field name="lead_owner_id" widget="many2one_avatar_user"/>
+                        <field name="created_by_id" widget="many2one_avatar_user"/>
+                        <field name="lead_quality" invisible="1"/>
+                        <field name="whatsapp_intro" invisible="1"/>
+                        <field name="testimonials" invisible="1"/>
+                        <field name="results_highlights" invisible="1"/>
+                        <field name="second_follow_up" invisible="1"/>
+                        <field name="sent_webinar" invisible="1"/>
+                        <field name="third_call" invisible="1"/>
+                        <field name="touches_complete" invisible="1"/>
+                    </group>
+<!--                    <group string="Touches Completed">-->
+<!--                        <field name="first_call_dt" string="1) First Call"/>-->
+<!--                        <field name="whatsapp_date" string="2) WhatsApp Message"/>-->
+<!--                        <field name="testimonials_dt" string="3) Testimonials"/>-->
+<!--                        <field name="results_highlights_dt" string="4) Results"/>-->
+<!--                        <field name="second_follow_up_dt" string="5) Second Call"/>-->
+<!--                        <field name="sent_webinar_dt" string="6) Webinar"/>-->
+<!--                        <field name="third_call_dt" string="7) Third Call"/>-->
+<!--                        <field name="touches_complete_dt" string="8) Completed"/>-->
+<!--                        <field name="zoom_schedule_dt"/>-->
+<!--                        <field name="walkin_schedule_dt"/>-->
+<!--                    </group>-->
+                    
+                    <group string="Global Team Lead Message">
+                        <field name="team_lead_remarks" placeholder="Enter message for Admission Officer..."/>
+                    </group>
+                <footer>
+                    <button name="action_save_remarks"
+                            string="Save Message"
+                            type="object"
+                            class="btn-primary"
+                            groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager"/>
+
+<!--                     <button name="action_first_attempt"-->
+<!--                            string="First Attempt"-->
+<!--                            type="object"-->
+<!--                            class="btn-success"-->
+<!--                            invisible="lead_quality != 'new'"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+<!--                    -->
+                    <!-- Send WhatsApp Intro -->
+<!--                    <button name="action_send_whatsapp"-->
+<!--                            string="Send WhatsApp Message"-->
+<!--                            type="object"-->
+<!--                            class="btn-success"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or whatsapp_intro == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+
+<!--                    &lt;!&ndash; Send Testimonials &ndash;&gt;-->
+<!--                    <button name="action_send_testimonials"-->
+<!--                            string="Send Testimonials"-->
+<!--                            type="object"-->
+<!--                            class="btn-info"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or whatsapp_intro == False or testimonials == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+
+<!--                     &lt;!&ndash; Send Results &ndash;&gt;-->
+<!--                    <button name="action_send_results"-->
+<!--                            string="Send Results"-->
+<!--                            type="object"-->
+<!--                            class="btn-info"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or whatsapp_intro == False or results_highlights == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+
+<!--                    &lt;!&ndash; Second Follow Up &ndash;&gt;-->
+<!--                    <button name="action_second_follow_up"-->
+<!--                            string="Second Follow Up"-->
+<!--                            type="object"-->
+<!--                            class="btn-warning"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or testimonials == False or results_highlights == False or second_follow_up == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+<!--                    -->
+<!--                     &lt;!&ndash; Send Webinar &ndash;&gt;-->
+<!--                    <button name="action_send_webinar"-->
+<!--                            string="Send Webinar"-->
+<!--                            type="object"-->
+<!--                            class="btn-info"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or second_follow_up == False or sent_webinar == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+
+<!--                     &lt;!&ndash; Third Call &ndash;&gt;-->
+<!--                    <button name="action_third_call"-->
+<!--                            string="Third Call"-->
+<!--                            type="object"-->
+<!--                            class="btn-warning"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or sent_webinar == False or third_call == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+<!--                    -->
+<!--                    &lt;!&ndash; Complete &ndash;&gt;-->
+<!--                    <button name="action_touches_complete"-->
+<!--                            string="Touches Complete"-->
+<!--                            type="object"-->
+<!--                            class="btn-success"-->
+<!--                            invisible="lead_quality not in ['new', 'first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable'] or third_call == False or touches_complete == True"-->
+<!--                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>-->
+
+                    <!-- Waiting for Admission Payment -->
+                    <button name="action_waiting_for_admission"
+                            string="Waiting for Admission Payment"
+                            type="object"
+                            class="btn-primary"
+                            invisible="lead_quality not in ['first_attempt', 'cold', 'warm', 'hot', 'not_responding', 'call_later', 'may_be_later', 'follow_up', 'not_reachable']"
+                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>
+
+                    <button name="action_schedule_meeting"
+                            string="Schedule Zoom/Walkin"
+                            type="object"
+                            class="btn-primary"
+                            groups="custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager"/>
+
+                    <button name="action_confirm" string="View Data" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

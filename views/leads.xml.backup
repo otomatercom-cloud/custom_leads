@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<odoo>
+
+    <record id="action_send_results_highlights_server" model="ir.actions.server">
+    <field name="name">Send Results Highlights</field>
+    <field name="model_id" ref="custom_leads.model_leads_logic"/>
+    <field name="binding_model_id" ref="custom_leads.model_leads_logic"/>
+    <field name="state">code</field>
+    <field name="code">
+action = records.action_send_results_highlights()
+    </field>
+</record>
+
+    <record id="list_view_of_admission" model="ir.ui.view">
+        <field name="name">admission.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <tree multi_edit="1" js_class="custom_list_renderer">
+                <!--                <field name="reference_no"/>-->
+                <field name="results_highlights"/>
+            <button name="%(action_send_results_highlights_server)d"
+                    string="Send Results Highlights"
+                    type="action"
+                    class="btn-primary"
+                    context="{'active_test': False}"/>
+                <field name="admission_date" string="Admission Date" readonly="state == 'qualified'" widget="search"/>
+                <field name="name" readonly="state == 'qualified'" widget="search"/>
+                <field name="phone_number" string="Mobile" widget="phone" readonly="state == 'qualified'"/>
+                <field name="leads_source" readonly="state == 'qualified'"/>
+                <field name="course_id" string="Course Interested" readonly="state == 'qualified'"/>
+                <field name="branch_id" string="Branch Interested" readonly="state == 'qualified'"/>
+                <field name="batch_id" string="Batch Interested" readonly="state == 'qualified'"/>
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"/>
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead"/>
+                <field name="state" optional="hide"/>
+                <field name="student_profile_created" optional="hide"/>
+                <field name="lead_quality" widget="badge" decoration-success="lead_quality == 'admission'"
+                       string="Status" readonly="state == 'qualified'"/>
+                <!--                <field name="state" decoration-info="state == 'new'"-->
+                <!--                       decoration-success="state == 'qualified'"-->
+                <!--                       decoration-danger="state == 'lost'" decoration-primary="state == 'in_progress'" widget="badge"/>-->
+                <field name="receipt_no" widget="badge" readonly="0" string="Invoice No."/>
+                <field name="admission_amount" readonly="1" sum="admission_amount" class="admission-amount"/>
+                <field string="Expected Revenue" name="batch_fee" sum="Total Fee"/>
+                <field name="date_of_receipt" widget="badge" readonly="0" string="Date of Invoice"/>
+                <field name="student_id" string="Student" invisible="student_profile_created == 0"/>
+                <button name="act_print_invoice" type="object" class="fa fa-download" string=" Invoice"
+                        invisible="admission_amount == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="list_view_of_waiting_for_admission" model="ir.ui.view">
+        <field name="name">waiting.for.admission.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <tree multi_edit="1" js_class="custom_list_renderer">
+                <!--                <field name="reference_no"/>-->
+                <field name="admission_date" string="Admission Date" readonly="state == 'qualified'" widget="search"/>
+                <field name="name" readonly="state == 'qualified'" widget="search"/>
+                <field name="phone_number" string="Mobile" widget="phone" readonly="state == 'qualified'"/>
+                <field name="leads_source" readonly="state == 'qualified'"/>
+                <field name="course_id" string="Course Interested" readonly="state == 'qualified'"/>
+                <field name="branch_id" string="Branch Interested" readonly="state == 'qualified'"/>
+                <field name="batch_id" string="Batch Interested" readonly="state == 'qualified'"/>
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"/>
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead"/>
+                <field name="student_profile_created" optional="hide"/>
+
+                <field name="state" optional="hide"/>
+
+                <field name="lead_quality" widget="badge" decoration-success="lead_quality == 'admission'"
+                       string="Status" readonly="state == 'qualified'"/>
+                <!--                <field name="state" decoration-info="state == 'new'"-->
+                <!--                       decoration-success="state == 'qualified'"-->
+                <!--                       decoration-danger="state == 'lost'" decoration-primary="state == 'in_progress'" widget="badge"/>-->
+                <field name="receipt_no" widget="badge" readonly="0" string="Invoice No."/>
+                <field name="admission_amount" readonly="1" sum="admission_amount" class="admission-amount"/>
+                <field string="Batch Fee" name="batch_fee" sum="Total Fee"/>
+                <field name="date_of_receipt" widget="badge" readonly="0" string="Date of Invoice"/>
+                <field name="student_profile_created"/>
+                <field name="admission_fee_paid" optional="hide"/>
+                <field name="student_id" string="Student" invisible="student_profile_created == 0"/>
+
+                <!--                <button name="create_invoice" string="Create Invoice" class="oe_highlight" type="object"-->
+                <!--                        invisible="student_profile_created != 0 or admission_fee_paid != 0"/>-->
+                <button name="act_print_invoice" type="object" class="fa fa-download" string=" Invoice"
+                        invisible="admission_amount == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="tree_view_leads_logic" model="ir.ui.view">
+        <field name="name">leads.logic.view.tree</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <tree multi_edit="1" js_class="o_list_renderer">
+                <field name="reference_no"/>
+                <field name="date_of_adding" string="Added Date"/>
+                <field name="name"/>
+                <field name="phone_number" string="Mobile" widget="phone"/>
+                <button name="whatsapp_click_button" class="fa fa-whatsapp btn-success" type="object"/>
+                <field name="leads_source"/>
+                <field name="college_name" string="Seminar@College"/>
+                <field name="lead_quality" widget="badge" decoration-info="lead_quality == 'new'"
+                       decoration-danger="lead_quality == 'bad_lead'" decoration-success="lead_quality == 'admission'"
+                       decoration-warning="lead_quality == 'warm'"
+                       decoration-primary="lead_quality == 'waiting_for_admission'"/>
+                <field name="course_id" string="Course Interested"/>
+                <field name="branch_id" string="Branch Interested"/>
+                <field name="next_follow_up_date"/>
+                <field name="call_responses" widget="many2many_tags" string="Last Call Responses"/>
+                <field name="call_response" string="Response Now"/>
+                <!--                <field name="second_response" string="2nd Response" widget="badge"/>-->
+                <!--                <field name="third_response" string="Last Response" widget="badge"/>-->
+                <field name="lead_owner" widget="many2one_avatar_user"
+                       groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_lead_digital_team"/>
+                <!--                <field name="tele_caller_id"/>-->
+                <field name="create_uid" groups="custom_leads.group_lead_team_lead"/>
+                <!--                <button name="act_transfer_to_waiting_for_admission" string="Transfer to Waiting for Admission"-->
+                <!--                        type="object" invisible="state != 'in_progress' or lead_quality == 'waiting_for_admission'"-->
+                <!--                        class="btn-waiting-for-admission"/>-->
+                <button name="act_admission" type="object" string="Waiting for Admission Payment"
+                        class="btn-convert"
+                        invisible="lead_quality != 'waiting_for_admission' or student_profile_created == 1"/>
+                <field name="student_profile_created" optional="hide"/>
+                <field name="admission_fee_paid" optional="hide"/>
+                <!--                <button name="create_invoice" string="Create Invoice" class="oe_highlight" type="object"-->
+                <!--                        invisible="student_profile_created != 1 or admission_fee_paid != 0"/>-->
+                <!--                <field name="admission_status"/>-->
+                <!--                <field name="state"/>-->
+                <field name="state" decoration-info="state == 'new'"
+                       decoration-success="state == 'qualified'"
+                       decoration-danger="state == 'lost'" decoration-primary="state == 'in_progress'" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="form_view_leads_logic" model="ir.ui.view">
+        <field name="name">leads.logic.view.form</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <form string="Leads">
+                <style>
+                    label.o_required_modifier {
+                    color: red !important;
+                    }
+                </style>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="act_attempt_to_connect" type="object" string="Attempted to Contact"
+                            class="btn btn-primary me-1" invisible="state != 'new'"/>
+                    <!--                    <button name="act_convert" type="object" string="Convert"-->
+                    <!--                            class="btn-convert" invisible="state in ['qualified','new','lost','deal']"/>-->
+                    <!--                    <button name="act_transfer_to_waiting_for_admission" string="Transfer to Waiting for Admission"-->
+                    <!--                            type="object" invisible="state != 'in_progress' or lead_quality == 'waiting_for_admission'"-->
+                    <!--                            class="btn-waiting-for-admission"/>-->
+                    <button name="act_admission" type="object" string="Waiting for Admission Payment"
+                            class="btn-convert"
+                            invisible="state != 'in_progress'  or student_profile_created == 1"/>
+                    <!--                    <button name="act_lost_lead" type="object" string="Lost"-->
+                    <!--                            class="btn-lost" invisible="state in ['lost','qualified']"/>-->
+                    <button name="act_return_to_new_lead" type="object" string="Return to New Lead"
+                            class="btn-lost" invisible="state != 'lost'"/>
+                    <button name="action_send_whatsapp_intro"
+        string="Send WhatsApp Intro"
+        type="object"
+        class="btn-primary"  invisible="first_call == False or whatsapp_intro == True"/>
+
+                    <button name="action_send_results_highlights"
+        string="Result Higlights Send "
+        type="object"
+        class="btn-primary"  invisible="whatsapp_intro == False or results_highlights == True" groups="custom_leads.group_lead_digital_head"/>
+
+                    <!--                    <button name="act_not_connected" type="object" string="Not Connected"/>-->
+                    <!--                                   <button string="Cancel" class="btn-default" special="cancel"/>-->
+                </header>
+                <!--                <sheet>-->
+                <!--                    <group>-->
+                <!--                        <field name="current_status" readonly="1" widget="badge"-->
+                <!--                               decoration-info="current_status == 'not_responding'"-->
+                <!--                               decoration-primary="current_status == 'new_lead'"/>-->
+                <!--                        <field name="transitions" invisible="current_status != 'need_follow_up'"/>-->
+                <!--                        <button-->
+                <!--                                name="act_connected"-->
+                <!--                                type="object"-->
+                <!--                                string="Connected"-->
+                <!--                                class="btn-connected" invisible="state != 'in_progress'"/>-->
+                <!--                        <button-->
+                <!--                                name="act_not_connected"-->
+                <!--                                type="object"-->
+                <!--                                string="Not Connected"-->
+                <!--                                class="btn-not-connected" invisible="state != 'in_progress'"/>-->
+                <!--                        <button name="act_call_back" type="object" string="Call Back"-->
+                <!--                                invisible="state != 'not_connected'" class="btn-call-back"/>-->
+                <!--                    </group>-->
+                <!--                </sheet>-->
+                <!--                <sheet>-->
+                <!--                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="state != 'lost'"/>-->
+                <!--                    <widget name="web_ribbon" title="Qualified" bg_color="text-bg-success"-->
+                <!--                            invisible="state != 'qualified'"/>-->
+                <!--                    &lt;!&ndash;                    <h2>&ndash;&gt;-->
+                <!--                    &lt;!&ndash;                        <field name="reference_no" invisible="state == 'new'" widget="badge"/>&ndash;&gt;-->
+                <!--                    &lt;!&ndash;                    </h2>&ndash;&gt;-->
+                <!--                    <group>-->
+
+                <!--                        <field name="current_status" readonly="1" widget="badge"-->
+                <!--                               decoration-info="current_status == 'not_responding'"-->
+                <!--                               decoration-primary="current_status == 'new_lead'"/>-->
+                <!--                        <field name="transitions" invisible="current_status != 'need_follow_up'"/>-->
+                <!--                        <button-->
+                <!--                                name="act_connected"-->
+                <!--                                type="object"-->
+                <!--                                string="Connected"-->
+                <!--                                class="btn-connected" invisible="state != 'in_progress'"/>-->
+                <!--                        <button-->
+                <!--                                name="act_not_connected"-->
+                <!--                                type="object"-->
+                <!--                                string="Not Connected"-->
+                <!--                                class="btn-not-connected" invisible="state != 'in_progress'"/>-->
+                <!--                        <button name="act_call_back" type="object" string="Call Back"-->
+                <!--                                invisible="state != 'not_connected'" class="btn-call-back"/>-->
+                <!--                        <separator/>-->
+
+                <!--                        <field name="name" style="background-color:#fae7e3;"/>-->
+                <!--                        <field name="email_address"/>-->
+                <!--                        <field name="phone_number" style="background-color:#fae7e3;"/>-->
+
+                <!--                    </group>-->
+                <!--                </sheet>-->
+                <sheet>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object" name="get_current_student_profile"
+                                icon="fa-user" string="Student Profile">
+                            <field string="Student Profile" name="student_smart_count" widget="statinfo"/>
+                        </button>
+
+                    </div>
+                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="state != 'lost'"/>
+                    <widget name="web_ribbon" title="Qualified" bg_color="text-bg-success"
+                            invisible="state != 'qualified'"/>
+                    <!--                    <h2>-->
+                    <!--                        <field name="reference_no" invisible="state == 'new'" widget="badge"/>-->
+                    <!--                    </h2>-->
+                    <group>
+
+                        <!--                        <field name="current_status" readonly="1" widget="badge"-->
+                        <!--                               decoration-info="current_status == 'not_responding'"-->
+                        <!--                               decoration-primary="current_status == 'new_lead'"/>-->
+                        <!--                        <field name="transitions" invisible="current_status != 'need_follow_up'"/>-->
+                        <button
+                                name="act_connected"
+                                type="object"
+                                string="Set Next Follow Up"
+                                class="btn-connected" invisible="state != 'in_progress'"/>
+                        <!--                        <button-->
+                        <!--                                name="act_not_connected"-->
+                        <!--                                type="object"-->
+                        <!--                                string="Not Connected"-->
+                        <!--                                class="btn-not-connected" invisible="state != 'in_progress'"/>-->
+                        <button name="act_call_back" type="object" string="Call Back"
+                                invisible="state != 'not_connected'" class="btn-call-back"/>
+                        <separator/>
+
+                        <field name="name" string="Lead Name" readonly="state == 'qualified'" required="1"
+                               class="o_form_required"/>
+                        <field name="email_address" readonly="state == 'qualified'" class="text-red-500"/>
+                        <field name="phone_number" class="o_form_required" readonly="state == 'qualified'"/>
+
+                    </group>
+                    <!--                    <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="state != 'lost'"/>-->
+                    <!--                    <widget name="web_ribbon" title="Qualified" bg_color="text-bg-success"-->
+                    <!--                            invisible="state != 'qualified'"/>-->
+
+                    <!--                    <h2>-->
+                    <!--                        <field name="reference_no" invisible="state == 'new'" widget="badge"/>-->
+                    <!--                    </h2>-->
+                    <group>
+                        <group string="Lead Information">
+                            <!--                            <field name="name"/>-->
+                            <!--                            <field name="email_address"/>-->
+                            <!--                            <field name="phone_number"/>-->
+                            <field name="leads_source" class="o_form_required" options="{'no_create':True}"
+                                   readonly="state == 'qualified'" groups="custom_leads.group_lead_custom_users"/>
+                            <field name="source_name" invisible="1"/>
+                            <field name="incoming_source_checking" invisible="1"/>
+                            <field name="digital_lead" invisible="1"/>
+                            <field name="incoming_source" invisible="incoming_source_checking != 1"/>
+                            <field name="digital_lead_source" invisible="digital_lead != 1"
+                                   required="digital_lead == 1" groups="custom_leads.group_lead_custom_users"/>
+                            <field name="lead_quality" readonly="state == 'qualified'" class="o_form_required"/>
+                            <!--                            <field name="lead_quality"-->
+
+                            <!--                                   decoration-bf="lead_quality == 'hot'"-->
+                            <!--                                   decoration-danger="lead_quality == 'bad_lead'"-->
+                            <!--                                   decoration-success="lead_quality == 'admission'"-->
+                            <!--                                   decoration-warning="lead_quality == 'warm'"-->
+                            <!--                                   decoration-info="lead_quality == 'cold'"/>-->
+                            <field name="updated_remarks" invisible="lead_quality != 'bad_lead'"/>
+                            <field name="district"/>
+                            <field name="place"/>
+                            <field name="phone_number_second"/>
+                            <field name="parent_number"/>
+                            <field name="is_team_leader" invisible="1"/>
+
+                        </group>
+                        <group string="Response ">
+                             <field name="call_response"/>
+                        </group>
+                        <group string="Course -Branch-Batch">
+                            <field name="preferred_course" invisible="source_name != 'Website'"/>
+                            <field name="academic_year"/>
+                            <field name="branch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                   readonly="state == 'qualified'"/>
+                            <field name="course_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                   readonly="state == 'qualified'"/>
+                            <field name="batch_id" options="{'no_quick_create': True, 'no_create_edit' : True}"
+                                   readonly="state == 'qualified'"/>
+
+
+                        </group>
+                        <group name="info" string="">
+                            <!--                            <field name="lead_type" style="background-color:#fae7e3;"/>-->
+                            <field name="mode_of_study"/>
+                            <field name="lead_status"/>
+                            <field name="call_response"/>
+                            <field name="call_responses" widget="many2many_tags"/>
+                            <!--                            <field name="second_response" string="2nd Response"/>-->
+                            <!--                            <field name="third_response" string="Last Response"/>-->
+                            <field name="crash_user_id" invisible="lead_quality != 'crash_lead'"/>
+                            <field name="not_response_note" invisible="lead_quality != 'not_responding'"/>
+                            <!--                            <field name="lead_status"/>-->
+                            <field name="country"/>
+
+                            <field name="campaign"/>
+                            <field name="seminar_lead_id" string="Seminar Child Id" invisible="1"/>
+                            <field name="seminar_id" invisible="1"/>
+                            <field name="sended_welcome_mail" invisible="1"/>
+                            <!--                            <field name="amount" invisible="state in ['new','in_progress']"/>-->
+                            <!--                            <field name="leads_assign"/>-->
+                        </group>
+                        <group name="users" string="Users">
+                            <field name="create_uid"/>
+                            <field name="lead_owner" readonly="state == 'qualified'"/>
+                            <field name="tele_caller_id"/>
+                        </group>
+                        <group string="Course Details">
+                            <field name="course_type"/>
+                            <field name="course_interested"/>
+                        </group>
+                        <group string="Admission Details">
+                            <field name="admission_status" readonly="state == 'qualified'" invisible="1"/>
+                            <field name="student_profile_created" invisible="1"/>
+                            <field name="crash_lead"/>
+<!--                            <field name="first_call"/>-->
+
+                            <field name="admission_fee_paid" invisible="1"/>
+                            <field name="student_id" string="Student" invisible="state != 'qualified'" readonly="1"/>
+                            <!--                            <field name="booking_amount" readonly="1"/>-->
+                        </group>
+
+                         <group string="Touch Points" col="4">
+    <field name="first_call" readonly="1"/>
+   <field name="first_call_dt" readonly="1"/>
+    <field name="whatsapp_intro"/>
+    <field name="whatsapp_date" readonly="1"/>
+    <field name="results_highlights" readonly="1"/>
+    <field name="second_followup" readonly="1"/>
+    <field name="course_wise_webinar" readonly="1"/>
+    <field name="webinar_followup" readonly="1"/>
+    <field name="testimonials" readonly="1"/>
+    <field name="placements" readonly="1"/>
+    <field name="logic_events" readonly="1"/>
+    <field name="retargeting" readonly="1"/>
+    <field name="third_follow_up" readonly="1"/>
+    <field name="fourth_follow_up" readonly="1"/>
+    <field name="closing" readonly="1"/>
+</group>
+
+
+                        <group>
+                            <!--                            <field name="referred_by"/>-->
+                            <!--                            <field name="lead_referral_staff_id"/>-->
+
+                            <!--                            <field name="platform"/>-->
+                            <!--                            <field name="remarks"/>-->
+
+                        </group>
+                        <group string="Educational Details">
+                            <field name="title"/>
+                            <field name="college_name" required="source_name == 'Seminar'"/>
+                            <field name="last_studied_course"/>
+                            <field name="academic_year_of_course_attend"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date_of_adding"/>
+                            <field name="assigned_date"/>
+                            <field name="re_allocation_date"/>
+                            <field name="next_follow_up_date"/>
+                            <field name="last_update_date"/>
+                            <field widget="badge" name="expected_joining_date"
+                                   invisible="lead_quality not in ['warm','hot']"/>
+                            <field name="closing_date" invisible="state != 'deal'"/>
+                            <field name="admission_date" invisible="state != 'qualified'"
+                                   readonly="is_team_leader == 0"/>
+                        </group>
+                        <group name="lost_reason" string="Lost Reason" invisible="state != 'lost'">
+                            <field name="lost_reason" style="background-color:#f54720 color:white;"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="logic_leads_kanban_view_odoo" model="ir.ui.view">
+        <field name="name">leads.logic.kanban</field>
+        <field name="model">leads.logic</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="lead_quality" default_order="date_of_adding desc"
+                    archivable="false"
+                    sample="1" quick_create="0">
+                <field name="lead_quality" default_order="lead_quality"
+                />
+                <progressbar field="lead_quality"
+                             colors='{"new": "primary", "waiting_for_admission": "info", "admission": "success", "bad_lead": "danger", "cold":"warning", "hot":"secondary", "warm":"secondary"}'/>
+
+
+                <!--                <progressbar field="state"-->
+                <!--                             colors='{"completed": "success", "in_progress": "warning", "cancelled": "secondary","hold":"info"}'/>-->
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_content oe_kanban_global_click" class="o_kanban_box">
+                            <div class="o_kanban_record_body">
+                                <span class="float-right text-right">
+                                    <!--                                    <field name="badge" widget="label_selection"-->
+                                    <!--                                           options="{'classes': {'bronze': 'info', 'silver': 'primary', 'gold': 'success'}}"/>-->
+                                </span>
+                            </div>
+                            <div>
+
+                                <strong class="o_kanban_record_title">
+                                    <span>
+                                        <b>Name :</b>
+                                        <field name="name"/>
+                                        <br/>
+                                    </span>
+                                </strong>
+                            </div>
+                            <div class="o_kanban_record_body">
+
+                                <span>
+                                    <b>Source :</b>
+                                    <field name="leads_source"/>
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Mobile :</b>
+                                    <field name="phone_number" widget="phone" class="hover-field-value"/>
+                                    <br/>
+                                </span>
+
+
+                                <span>
+                                    <b>Lead Owner :</b>
+                                    <field name="lead_owner"/>
+                                    <!--                                    <field name="lead_owner" widget="many2one_avatar_employee"/>-->
+                                    <br/>
+                                </span>
+                                <span>
+                                    <b>Response :</b>
+                                    <span class="hover-text">
+                                        <field name="truncated_call_response"/>
+                                        <span class="full-response">
+                                            <field name="call_response"/>
+                                        </span>
+                                    </span>
+                                    <br/>
+                                </span>
+
+
+                                <span>
+                                    <b>Follow Up Date:</b>
+                                    <field name="next_follow_up_date" widget="badge"/>
+                                    <br/>
+                                </span>
+                            </div>
+                            <div class="o_kanban_record_bottom d-flex justify-content-between">
+                                <div>
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="lead_owner" widget="many2one_avatar_employee"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="leads_logic_search_view" model="ir.ui.view">
+        <field name="name">leads.logic.search.view</field>
+        <field name="model">leads.logic</field>
+        <!--        <field name="inherit_id" ref="custom_leads.tree_view_leads_logic"/>-->
+        <field name="arch" type="xml">
+            <search>
+
+                <!-- Default filter for Today -->
+                <filter string="Today's Leads" name="today" domain="[('date_of_adding', '=', context_today())]"/>
+
+
+                <filter string="Prev Month" name="prev_month"
+                        domain="[('date_of_adding','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-%%m-01')),('date_of_adding','&lt;',time.strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Current Month" name="current_month"
+                        domain="[('date_of_adding','>=',time.strftime('%%Y-%%m-01')),('date_of_adding','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Current Week" name="current_week"
+                        domain="[('date_of_adding', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('date_of_adding', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
+
+                <field name="reference_no" string="Reference"/>
+                <field name="phone_number" string="Mobile Number"/>
+                <field name="leads_source" string="Lead Source"/>
+                <field name="lead_quality" string="Lead Quality"/>
+                <field name="name" string="Lead Name"/>
+                <!--                <field name="title" string="Title"/>-->
+                <field name="college_name" string="College"/>
+                <field name="phone_number_second" string="Alternate Mobile Number"/>
+                <field name="course_id" string="Course"/>
+            </search>
+        </field>
+    </record>
+    <record id="leads_logic_search_view_admission" model="ir.ui.view">
+        <field name="name">leads.logic.search.admission.view</field>
+        <field name="model">leads.logic</field>
+        <!--        <field name="inherit_id" ref="custom_leads.tree_view_leads_logic"/>-->
+        <field name="arch" type="xml">
+            <search>
+                <!-- Default filter for Today -->
+                <filter string="Today's Admission" name="today" domain="[('admission_date', '=', context_today())]"/>
+
+
+                <filter string="Prev Month" name="prev_month"
+                        domain="[('admission_date','&gt;=',(context_today()-relativedelta(years=1)).strftime('%%Y-%%m-01')),('admission_date','&lt;',time.strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Current Month" name="current_month"
+                        domain="[('admission_date','>=',time.strftime('%%Y-%%m-01')),('admission_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Current Week" name="current_week"
+                        domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"
+                />
+
+                <field name="reference_no" string="Reference"/>
+                <field name="phone_number" string="Mobile Number"/>
+                <field name="leads_source" string="Lead Source"/>
+                <field name="lead_quality" string="Lead Quality"/>
+                <field name="name" string="Lead Name"/>
+                <!--                <field name="title" string="Title"/>-->
+                <field name="college_name" string="College"/>
+                <field name="phone_number_second" string="Alternate Mobile Number"/>
+                <field name="course_id" string="Course"/>
+
+            </search>
+        </field>
+    </record>
+
+    <!--    <record id="leads_search_filter" model="ir.ui.view">-->
+    <!--        <field name="model">leads.logic</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <search string="Filters">-->
+    <!--                <field name="reference_no" string="Reference"/>-->
+    <!--                <field name="phone_number" string="Mobile Number"/>-->
+    <!--                <field name="leads_source" string="Lead Source"/>-->
+    <!--                <field name="lead_quality" string="Lead Quality"/>-->
+    <!--                <field name="name" string="Lead Name"/>-->
+    <!--                &lt;!&ndash;                <field name="title" string="Title"/>&ndash;&gt;-->
+    <!--                <field name="college_name" string="College"/>-->
+    <!--                <field name="phone_number_second" string="Alternate Mobile Number"/>-->
+    <!--                <field name="course_id" string="Course"/>-->
+    <!--                &lt;!&ndash;                <filter string="assign" name="lead_owner" context="{'group_by': 'leads_assign'}"/>&ndash;&gt;-->
+    <!--                &lt;!&ndash;                <group expand="0" string="Group By">&ndash;&gt;-->
+    <!--                &lt;!&ndash;                    <filter string="assign" name="leads_assign" context="{'group_by': 'leads_assign'}"/>&ndash;&gt;-->
+    <!--                &lt;!&ndash;                </group>&ndash;&gt;-->
+
+    <!--            </search>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+    <record model="ir.actions.act_window" id="action_leads_main_action">
+        <field name="name">Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '!=', 1)]</field>
+
+        <!--        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>-->
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+       <record model="ir.actions.act_window" id="action_results_highlights_action">
+        <field name="name">Results High Lights</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+<!--        <field name="domain">[('results_highlights', '=', False)]</field>-->
+            <field name="domain">[('whatsapp_intro','=',True),('results_highlights','=',False)]</field>
+
+        <!--        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>-->
+<!--        <field name="context">{'search_default_current_week': 1}</field>-->
+    </record>
+
+    <record model="ir.actions.act_window" id="action_crash_leads_main_action">
+        <field name="name">Crash Leads</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1)]</field>
+        <!--        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>-->
+        <!--        <field name="context">{'search_default_current_week': 1}</field>-->
+    </record>
+
+    <record model="ir.actions.act_window" id="action_crash_leads_admission_main_action">
+        <field name="name">Crash Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1),('lead_quality', '=', 'admission')]</field>
+        <!--        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>-->
+        <!--        <field name="context">{'search_default_current_week': 1}</field>-->
+    </record>
+    <record model="ir.actions.act_window" id="action_crash_waiting_for_admission_main_action">
+        <field name="name">Crash Waiting for Admission</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="domain">[('crash_lead', '=', 1),('lead_quality', '=', 'waiting_for_admission')]</field>
+        <!--        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>-->
+        <!--        <field name="context">{'search_default_current_week': 1}</field>-->
+    </record>
+
+    <record id="action_list_view_of_admission" model="ir.actions.act_window">
+        <field name="name">Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('lead_quality', '=', 'admission'),('crash_lead', '!=', 1)]</field>
+        <field name="view_id" ref="custom_leads.list_view_of_admission"/>
+        <field name="search_view_id" ref="custom_leads.leads_logic_search_view_admission"/>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record id="action_list_view_of_waiting_for_admission" model="ir.actions.act_window">
+        <field name="name">Waiting for Admissions</field>
+        <field name="res_model">leads.logic</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('lead_quality', '=', 'waiting_for_admission'),('crash_lead', '!=', 1)]</field>
+        <field name="view_id" ref="custom_leads.tree_view_leads_logic"/>
+        <field name="search_view_id" ref="custom_leads.leads_logic_search_view"/>
+        <field name="context">{'search_default_current_week': 1}</field>
+    </record>
+
+    <record id="ir_sequence_leads_logic" model="ir.sequence">
+        <field name="name">Leads Sequence</field>
+        <field name="code">leads.logic</field>
+        <field name="prefix">LS</field>
+        <field name="padding">3</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record model="ir.actions.act_window" id="lead_activity_view_action">
+        <field name="name">Leads Activity</field>
+        <field name="res_model">mail.activity</field>
+        <field name="view_mode">tree,form,calendar</field>
+        <field name="domain">[('res_model', '=', 'leads.logic')]</field>
+    </record>
+
+    <menuitem id="leads_main_menu"
+              name="Leads"
+              web_icon="custom_leads,static/description/icon.png"/>
+
+    <menuitem
+            id="leads_sub_menu"
+            name="Leads"
+            parent="leads_main_menu"
+            sequence="1"
+            action="action_leads_main_action"
+            groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"/>
+
+    <menuitem
+            id="crash_leads_sub_menu"
+            name="Crash Leads"
+            parent="leads_main_menu"
+            sequence="2"
+            action="action_crash_leads_main_action"
+            groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem
+            id="crash_waiting_for_admission_sub_menu"
+            name="Crash Waiting for Admission"
+            parent="leads_main_menu"
+            sequence="4"
+            action="action_crash_waiting_for_admission_main_action"
+            groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem
+            id="crash_admission_sub_menu"
+            name="Crash Admission"
+            parent="leads_main_menu"
+            sequence="4"
+            action="action_crash_leads_admission_main_action"
+            groups="custom_leads.group_crash_head,custom_leads.group_crash_user,custom_leads.group_lead_manager"/>
+
+    <menuitem
+            id="leads_activity_menu"
+            name="Tasks"
+            parent="leads_main_menu"
+            sequence="10"
+            action="lead_activity_view_action"/>
+    <!--    <menuitem-->
+    <!--            id="leads_deals_menu"-->
+    <!--            name="Deals"-->
+    <!--            parent="leads_main_menu"-->
+    <!--            sequence="2"-->
+    <!--            action="action_leads_deals_action"/>-->
+    <menuitem
+            id="leads_configuration_menu"
+            name="Configuration"
+            parent="leads_main_menu"
+            action="action_leads_sources_main_action"
+            groups="base.group_no_one"
+            sequence="10"
+    />
+    <menuitem
+            id="leads_admission_menu"
+            name="Admission"
+            parent="leads_main_menu"
+            sequence="5"
+            groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"
+            action="action_list_view_of_admission"/>
+    <menuitem
+            id="leads_waiting_for_admission_menu"
+            name="Waiting for Admission"
+            parent="leads_main_menu"
+            sequence="4"
+            groups="custom_leads.group_lead_users,custom_leads.group_lead_digital_team,custom_leads.group_lead_manager,custom_leads.group_lead_tele_callers,custom_leads.group_lead_team_lead"
+            action="action_list_view_of_waiting_for_admission"/>
+      <menuitem
+            id="results_highlights_admission_menu"
+            name="Results High Lights"
+            parent="leads_main_menu"
+            sequence="5"
+            groups="custom_leads.group_lead_digital_head"
+            action="action_results_highlights_action"/>
+
+</odoo>

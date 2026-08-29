@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="activity_leads_model_id">
+        <field name="name">activity.form.inherit</field>
+        <field name="model">mail.activity</field>
+        <field name="inherit_id" ref="mail.mail_activity_view_form_popup"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="lead_id" string="Follow Up Lead" invisible="res_model != 'leads.logic'"/>
+                <!--                <field name="res_model"/>-->
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="student_form_view_inheritance">
+        <field name="name">student.form.inherit</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="admission_officer_id" readonly="1"/>
+                <field name="admission_date" readonly="1"/>
+                <field name="lead_id" readonly="1" string="Lead"/>
+                <field name="is_referral" readonly="1"/>
+                <field name="referral_type" readonly="1" invisible="is_referral == 'no'"/>
+                <field name="referral_lead_id" readonly="1" invisible="is_referral == 'no' or referral_type != 'student'"/>
+            </xpath>
+            <xpath expr="//field[@name='batch_id']" position="after">
+                <field name="branch_id"/>
+
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="student_view_op_student_tree">
+        <field name="name">student.list.inherit</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='batch_id']" position="after">
+                <field name="branch_id"/>
+
+            </xpath>
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="admission_date" readonly="1"/>
+
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="student_view_op_enrollment_student_tree">
+        <field name="name">student.list.enrollment.inherit</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_tree_enrollment"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='batch_id']" position="after">
+                <field name="branch_id"/>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="admission_date" readonly="1"/>
+
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_employee_search_view_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Today's Admission" name="today" domain="[('admission_date', '=', context_today())]"/>
+                <filter string="Current Week" name="current_week"
+                        domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"
+                />
+                <filter string="Current Month" name="current_month"
+                        domain="[('admission_date','>=',time.strftime('%%Y-%%m-01')),('admission_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Prev Month" name="prev_month"
+                        domain="[('admission_date', '&gt;=', (context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),
+                            ('admission_date', '&lt;', context_today().strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Today's Enrollments" name="today_admission_enrollment" domain="[('re_enrolled_date', '=', context_today())]"/>
+                <filter string="Current Week Enrollments" name="current_week_enrollment"
+                        domain="[('re_enrolled_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('re_enrolled_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"
+                />
+                <filter string="Current Month Enrollments" name="current_month_enrollment"
+                        domain="[('re_enrolled_date','>=',time.strftime('%%Y-%%m-01')),('re_enrolled_date','&lt;',(context_today()+relativedelta(months=1)).strftime('%%Y-%%m-01'))]"
+                />
+                <filter string="Prev Month Enrollments" name="prev_month_enrollment"
+                        domain="[('re_enrolled_date', '&gt;=', (context_today()-relativedelta(months=1)).strftime('%%Y-%%m-01')),
+                            ('re_enrolled_date', '&lt;', context_today().strftime('%%Y-%%m-01'))]"
+                />
+
+            </xpath>
+        </field>
+    </record>
+    <!--    <record id="logic_base_17.action_redirect_op_students" model="ir.actions.server">-->
+    <!--        <field name="context">{'search_default_current_week': 1}</field>-->
+    <!--    </record>-->
+
+    <record id="branch_inherit_batch_form" model="ir.ui.view">
+        <field name="name">Batch inherit Branch</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="branch"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="branch_inherit_batch_tree" model="ir.ui.view">
+        <field name="name">Batch inherit List View</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="branch"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
