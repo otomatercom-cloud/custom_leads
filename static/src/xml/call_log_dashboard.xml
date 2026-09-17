@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_leads.CallLogDashboard">
+        <div class="o_call_dash">
+
+            <!-- Header -->
+            <div class="o_call_dash_header">
+                <div>
+                    <div class="o_call_dash_kicker">Telephony</div>
+                    <h1>Call Dashboard</h1>
+                    <p>Daily dialing, connect rate and recordings per agent.</p>
+                </div>
+                <div class="o_call_dash_filters">
+                    <t t-foreach="dateFilters" t-as="df" t-key="df.key">
+                        <button type="button"
+                                t-attf-class="btn btn-sm {{ state.dateFilter === df.key ? 'btn-primary' : 'btn-light' }}"
+                                t-on-click="() => this.setDateFilter(df.key)">
+                            <t t-esc="df.label"/>
+                        </button>
+                    </t>
+                    <button type="button" class="btn btn-sm btn-light" t-on-click="loadData">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI cards -->
+            <div class="o_call_kpi_grid">
+                <t t-foreach="kpiCards" t-as="card" t-key="card.key">
+                    <div t-attf-class="o_call_kpi_card o_call_kpi_{{ card.accent }}">
+                        <span class="o_call_kpi_icon"><i t-attf-class="fa {{ card.icon }}"/></span>
+                        <strong class="o_call_kpi_value" t-esc="kpiValue(card.key)"/>
+                        <span class="o_call_kpi_label" t-esc="card.label"/>
+                    </div>
+                </t>
+                <div class="o_call_kpi_card o_call_kpi_slate">
+                    <span class="o_call_kpi_icon"><i class="fa fa-clock-o"/></span>
+                    <strong class="o_call_kpi_value" t-esc="state.kpi.talk_time || '00:00:00'"/>
+                    <span class="o_call_kpi_label">Total Talk Time</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <t t-if="state.loading">
+                <div class="o_call_dash_loading">
+                    <i class="fa fa-circle-o-notch fa-spin me-2"/>Loading call data…
+                </div>
+            </t>
+
+            <!-- Teams -->
+            <t t-else="">
+                <t t-if="!state.teams.length">
+                    <div class="o_call_dash_empty">No agents found for your role.</div>
+                </t>
+                <t t-foreach="state.teams" t-as="team" t-key="team.id">
+                    <div class="o_call_team_card">
+                        <div class="o_call_team_header">
+                            <div class="o_call_team_title">
+                                <i class="fa fa-users me-2"/>
+                                <span t-esc="team.name"/>
+                            </div>
+                            <div class="o_call_team_chips">
+                                <span class="o_call_chip o_call_chip_blue">
+                                    <t t-esc="team.summary.assigned"/> assigned
+                                </span>
+                                <span class="o_call_chip o_call_chip_purple">
+                                    <t t-esc="team.summary.total_calls"/> calls
+                                </span>
+                                <span class="o_call_chip o_call_chip_green">
+                                    <t t-esc="team.summary.connected"/> connected
+                                </span>
+                                <span class="o_call_chip o_call_chip_amber">
+                                    <t t-esc="team.summary.pending"/> pending
+                                </span>
+                            </div>
+                        </div>
+                        <div class="o_call_team_table_wrap">
+                            <table class="o_call_team_table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Reporting TL</th>
+                                        <th class="text-end">Assigned</th>
+                                        <th class="text-end">Calls</th>
+                                        <th class="text-end">Out</th>
+                                        <th class="text-end">In</th>
+                                        <th class="text-end">Connected</th>
+                                        <th class="text-end">Not Conn.</th>
+                                        <th class="text-end">Called Leads</th>
+                                        <th class="text-end">Pending</th>
+                                        <th class="text-end">Talk Time</th>
+                                        <th class="text-end">Avg</th>
+                                        <th>Connect %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="team.agents" t-as="agent" t-key="agent.employee_id">
+                                        <tr class="o_call_agent_row" t-on-click="() => this.openAgentCalls(agent)">
+                                            <td class="o_call_agent_name" t-esc="agent.name"/>
+                                            <td><span class="o_call_role_badge" t-esc="agent.role"/></td>
+                                            <td class="text-muted" t-esc="agent.reporting_tl || '—'"/>
+                                            <td class="text-end" t-esc="agent.assigned"/>
+                                            <td class="text-end fw-bold" t-esc="agent.total_calls"/>
+                                            <td class="text-end" t-esc="agent.outgoing"/>
+                                            <td class="text-end" t-esc="agent.incoming"/>
+                                            <td class="text-end text-success" t-esc="agent.connected"/>
+                                            <td class="text-end text-danger" t-esc="agent.not_connected"/>
+                                            <td class="text-end" t-esc="agent.called_leads"/>
+                                            <td class="text-end" t-esc="agent.pending"/>
+                                            <td class="text-end" t-esc="agent.talk_time"/>
+                                            <td class="text-end" t-esc="agent.avg_time"/>
+                                            <td>
+                                                <div class="o_call_pct_wrap">
+                                                    <div class="o_call_pct_bar">
+                                                        <div t-attf-class="o_call_pct_fill o_call_pct_{{ connectBarColor(agent.connect_pct) }}"
+                                                             t-att-style="'width:' + agent.connect_pct + '%'"/>
+                                                    </div>
+                                                    <span class="o_call_pct_label"><t t-esc="agent.connect_pct"/>%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+                <p class="o_call_dash_caption">
+                    Period: <t t-esc="state.dateFrom"/> → <t t-esc="state.dateTo"/>
+                    · Click any row to open the underlying call logs
+                    · Connected = answered status or duration &gt; 0
+                </p>
+            </t>
+        </div>
+    </t>
+</templates>

@@ -22,8 +22,6 @@ def _format_user_datetime(record, value, fmt='%d %b %Y %H:%M'):
     return fields.Datetime.context_timestamp(record, value).strftime(fmt)
 
 
-
-
 # --------------------------------------------------------------------------
 # Model: lead.assignment.history
 # Description: Tracks the history of lead assignments to different owners.
@@ -65,12 +63,11 @@ class LeadQualityHistory(models.Model):
             ('may_be_later', '🔔 May Be Later'),
             ('follow_up', '⏰  Follow Up'),
             ('not_reachable', '🚫  Not Reachable'),
-            ('logic_students', '🏫 Logic Students'),
             # ('already_joined', '✅ Already Joined'),
             ('joined_other_institute', '🏫 Joined Other Institute'),
             ('wrong_number', '📵 Wrong number'),
             ('not_enquiry', '🛑 Not Enquiry'),
-	    ('not_interested','Not Interested'),
+            ('not_interested', 'Not Interested'),
         ],
         string='Lead Quality'
     )
@@ -91,9 +88,9 @@ class LeadsForm(models.Model):
     _order = 'id desc'
 
     # Basic Information
-    leads_source = fields.Many2one('leads.sources', string='Leads Source', required=1)
+    leads_source = fields.Many2one('leads.sources', string='Leads Source', required=1, tracking=1)
     source_name = fields.Char(string="Source", related="leads_source.name")
-    source_campaign_id = fields.Many2one('lead.source.campaign', string='Source Campaign')
+    source_campaign_id = fields.Many2one('lead.source.campaign', string='Source Campaign', tracking=1)
     # Helper field (not shown on the form) used purely so the Lead Source
     # dropdown can be filtered down to just the parent of whichever
     # Campaign is currently selected, e.g. picking "Urban Chat Leads Meta"
@@ -102,14 +99,14 @@ class LeadsForm(models.Model):
         'leads.sources', string='Campaign Parent Source',
         related='source_campaign_id.lead_source_id', store=False
     )
-    name = fields.Char(string='Lead Name', required=1)
-    email_address = fields.Char(string='Email')
-    phone_number = fields.Char(string='Mobile', required=1)
+    name = fields.Char(string='Lead Name', required=1, tracking=1)
+    email_address = fields.Char(string='Email', tracking=1)
+    phone_number = fields.Char(string='Mobile', required=1, tracking=1)
     probability = fields.Float(string='Probability')
     admission_status = fields.Boolean(string='Admission', readonly=1)
     date_of_adding = fields.Date(string='Date of Adding', default=fields.Datetime.now, readonly=1)
     last_update_date = fields.Datetime(string='Last Updated Date', default=fields.Datetime.now)
-    course_id = fields.Many2one('op.course', string='Course')
+    course_id = fields.Many2one('op.course', string='Course', tracking=1)
     reference_no = fields.Char(
         "Reference",
         default=lambda self: _('New'),
@@ -186,7 +183,6 @@ class LeadsForm(models.Model):
             else:
                 rec.duplicate_lead_info = False
 
-
     # Tracking Lead
 
     open_count = fields.Integer(string="Open Count", default=0)
@@ -227,7 +223,6 @@ class LeadsForm(models.Model):
                 _logger.error("AUDIT ERROR: %s", str(e))
 
         return res
-
 
     def write(self, vals):
         if 'phone_number' in vals:
@@ -310,7 +305,7 @@ class LeadsForm(models.Model):
             ('not_responding', '🔕  Ringing Not Responding'),
             ('call_later', '📞  Call Later'), ('may_be_later', '🔔 May Be Later'),
             ('follow_up', '⏰  Follow Up'), ('not_reachable', '🚫  Not Reachable'),
-            ('logic_students', '🏫 Logic Students'),
+            ('logic_students', 'Logic Students'),
             ('already_joined', '✅ Already Joined'), ('joined_other_institute', '🏫 Joined Other Institute'),
             ('wrong_number', '📵 Wrong number'), ('not_enquiry', '🛑 Not Enquiry')
         ],
@@ -318,12 +313,12 @@ class LeadsForm(models.Model):
     )
 
     lead_stage_category = fields.Selection([
-        ('funnel' , 'FUNNEL'),
+        ('funnel', 'FUNNEL'),
         ('prospects', 'PROSPECTS'),
         ('rnr_dnp', 'RNR / DNP'),
         ('admission_done', 'ADMISSION DONE'),
-        ('re_try','RE-TRY'),
-        ('alumni','ALUMNI'),
+        ('re_try', 'RE-TRY'),
+        ('alumni', 'ALUMNI'),
         ('junk', 'JUNK')
     ], string='Stage Category', compute='_compute_lead_stage', store=True)
 
@@ -333,11 +328,11 @@ class LeadsForm(models.Model):
             quality = record.lead_quality
 
             if quality in ['hot', 'warm', 'cold', 'call_later',
-                            'waiting_for_admission',
+                           'waiting_for_admission',
                            'crash_lead', 'already_joined']:
                 record.lead_stage_category = 'prospects'
 
-            elif quality in ['new', 'first_attempt','follow_up']:
+            elif quality in ['new', 'first_attempt', 'follow_up']:
                 record.lead_stage_category = 'funnel'
 
             elif quality in ['not_interested', 'joined_other_institute']:
@@ -359,6 +354,7 @@ class LeadsForm(models.Model):
                 record.lead_stage_category = False
 
         # The actual toggle
+
     # hide_marketing_stages = fields.Boolean(default=False)
     hide_marketing_stages = fields.Boolean(string="Hide Toggle", default=False)
 
@@ -373,6 +369,7 @@ class LeadsForm(models.Model):
         for record in self:
             # We use write so Odoo acknowledges the change immediately in the UI
             record.write({'hide_marketing_stages': not record.hide_marketing_stages})
+
     lost_reason = fields.Text(string="Lost Reason")
     crash_user_id = fields.Many2one('res.users', string="Crash User")
     # lead_status = fields.Selection(
@@ -385,7 +382,8 @@ class LeadsForm(models.Model):
     #     string='Lead Status',
     # )
     place = fields.Char('Place')
-    lead_owner = fields.Many2one('hr.employee', string='Lead Owner', default=lambda self: self.env.user.employee_id.id)
+    lead_owner = fields.Many2one('hr.employee', string='Lead Owner', default=lambda self: self.env.user.employee_id.id,
+                                 tracking=1)
     seminar_lead_id = fields.Char()
     admission_date = fields.Datetime(string="Admission Date")
     phone_number_second = fields.Char(string='Phone Number')
@@ -428,8 +426,9 @@ class LeadsForm(models.Model):
     )
     incoming_source_checking = fields.Boolean(string='Incoming Source Checking')
     academic_year = fields.Selection(
-        [('2024-2025', '2024-2025'), ('2025-2026', '2025-2026'), ('2026-2027', '2026-2027'),('2027-2028','2027-2028'), ('nil', 'Nil')],
-        string="Academic Year"
+        [('2024-2025', '2024-2025'), ('2025-2026', '2025-2026'), ('2026-2027', '2026-2027'), ('2027-2028', '2027-2028'),
+         ('nil', 'Nil')],
+        string="Academic Year", tracking=1
     )
     college_name = fields.Char(string='College/School')
     title = fields.Char(string="Title")
@@ -475,17 +474,22 @@ class LeadsForm(models.Model):
             ('plus_one', 'Plus One'), ('plus_two', 'Plus Two'),
             ('bcom_1', 'B.Com 1st Year'), ('bcom_2', 'B.Com 2nd Year'),
             ('bcom_3', 'B.Com 3rd Year'), ('meta_leads', 'Meta Leads'),
+            ('others', 'Others'),
         ],
         string='Student Category', tracking=1,
         help="Nurturing segment for this lead. Auto-guessed from the Lead "
              "Source / Source Campaign name (see _guess_student_category), "
              "but can always be corrected manually — a manual value is "
-             "never overwritten by the auto-guess."
+             "never overwritten by the auto-guess. 'Others' catches every "
+             "lead with a Lead Source / Campaign that doesn't match one of "
+             "the named categories."
     )
 
     # Checked in order — first keyword match wins. Longer/more specific
     # patterns are listed before the shorter ones they could be confused
-    # with (e.g. 'bcom 3' before a bare 'bcom').
+    # with (e.g. 'bcom 3' before a bare 'bcom'). Anything with a Lead
+    # Source / Campaign that matches none of these falls through to
+    # 'others' in _guess_student_category below.
     _STUDENT_CATEGORY_KEYWORDS = [
         ('bcom_3', ['bcom 3', 'b.com 3', 'bcom3', 'b com 3', 'bcom iii', 'bcom-3']),
         ('bcom_2', ['bcom 2', 'b.com 2', 'bcom2', 'b com 2', 'bcom ii', 'bcom-2']),
@@ -498,12 +502,20 @@ class LeadsForm(models.Model):
     @api.model
     def _guess_student_category(self, source_name, campaign_name):
         """Return a student_category key guessed from the Lead Source /
-        Source Campaign names, or False if nothing matches."""
-        text = f" {source_name or ''} {campaign_name or ''} ".lower()
+        Source Campaign names. Falls back to 'others' when there IS a
+        source/campaign name to go on but none of the specific keywords
+        match, so every categorisable lead lands somewhere on the
+        Nurturing Dashboard. Returns False only when there's nothing at
+        all to guess from (no source, no campaign)."""
+        source_name = (source_name or '').strip()
+        campaign_name = (campaign_name or '').strip()
+        text = f" {source_name} {campaign_name} ".lower()
         for key, keywords in self._STUDENT_CATEGORY_KEYWORDS:
             for kw in keywords:
                 if kw in text:
                     return key
+        if source_name or campaign_name:
+            return 'others'
         return False
 
     @api.onchange('leads_source', 'source_campaign_id')
@@ -529,11 +541,11 @@ class LeadsForm(models.Model):
                 record.student_category = guess
 
     whatsapp_sent_count = fields.Integer(string='WhatsApp Sent', default=0, readonly=True,
-                                          help="Number of times this lead was included in a "
-                                               "WhatsApp nurturing export.")
+                                         help="Number of times this lead was included in a "
+                                              "WhatsApp nurturing export.")
     sms_sent_count = fields.Integer(string='SMS Sent', default=0, readonly=True,
-                                     help="Number of times this lead was included in an "
-                                          "SMS nurturing export.")
+                                    help="Number of times this lead was included in an "
+                                         "SMS nurturing export.")
     adm_id = fields.Integer(string='Admission Id')
     student_id = fields.Many2one('op.student', string='Student Id')
     district = fields.Selection(
@@ -684,7 +696,6 @@ class LeadsForm(models.Model):
     cma_usa_counselling_done = fields.Boolean("CMA Counselling Done")
     cma_usa_counselling_date = fields.Datetime("CMA Counselling Date", readonly=True)
 
-
     # ACCA
 
     # --- ACCA STAGE 1 ---
@@ -733,8 +744,6 @@ class LeadsForm(models.Model):
 
     # Stages Completion Tracking
 
-
-
     @api.depends('course_inter')
     def _compute_is_ciap_selected(self):
         for rec in self:
@@ -753,7 +762,6 @@ class LeadsForm(models.Model):
             rec.is_cma_usa_selected = 'CMA USA' in selected_names
             rec.is_ca_inter_selected = 'CA INTER' in selected_names
             rec.is_ca_selected = 'CA' in selected_names
-
 
     def action_send_course_launch_media(self):
         self.ensure_one()
@@ -820,8 +828,6 @@ class LeadsForm(models.Model):
             'cma_usa_video_sent_date',
             message
         )
-
-
 
     @api.depends(
         'course_inter', 'course_inter.name', 'first_call', 'webinar_invite_sent', 'ciap_media_sent',
@@ -954,7 +960,7 @@ class LeadsForm(models.Model):
                             <div class="stage-title">Stage 5: Outcome Proof</div>
                             <div>{'✅' if rec.cma_usa_placements_sent else '⬜'} Placements</div>
                         </div>
-                                               
+
                         <div class="stage-column">
                             <div class="stage-title">Stage 6 & 7: Closing</div>
                             <div>{'✅' if rec.cma_usa_value_added_sent else '⬜'} Value Added</div>
@@ -1180,17 +1186,11 @@ class LeadsForm(models.Model):
     ciap_demo_class_sent = fields.Boolean("CIAP Free Demo Class Sent")
     ciap_demo_class_sent_date = fields.Datetime(readonly=True)
 
-
-
-
     # Stage 3 Fields and Logic
     ciap_faculty_pool_sent = fields.Boolean("CIAP Faculty Pool Sent")
     ciap_faculty_pool_sent_date = fields.Datetime(readonly=True)
     ciap_value_added_videos_sent = fields.Boolean("CIAP Value Added Programs Videos Sent")
     ciap_value_added_videos_sent_date = fields.Datetime(readonly=True)
-
-
-
 
     # Stage 4 Fields and Logic
     ciap_testimonials_sent = fields.Boolean("CIAP Student Testimonials Sent")
@@ -1198,14 +1198,9 @@ class LeadsForm(models.Model):
     ciap_winners_meet_sent = fields.Boolean("CIAP Winners Meet Videos Sent")
     ciap_winners_meet_sent_date = fields.Datetime(readonly=True)
 
-
-
     # Stage 5 Fields and Logic
     ciap_placement_media_sent = fields.Boolean("CIAP Placement Photos/Videos Sent")
     ciap_placement_media_sent_date = fields.Datetime(readonly=True)
-
-
-
 
     # Stage 6 Fields and Logic
     ciap_starter_kit_sent = fields.Boolean("CIAP Starter Kit Sent")
@@ -1213,15 +1208,9 @@ class LeadsForm(models.Model):
     ciap_key_benefits_reshared = fields.Boolean("CIAP Key Benefits Re-shared")
     ciap_key_benefits_reshared_date = fields.Datetime(readonly=True)
 
-
-
-
     # Stage 7 Fields and Logic
     ciap_career_counselling_sent = fields.Boolean("CIAP Free Career Counselling Sent")
     ciap_career_counselling_sent_date = fields.Datetime(readonly=True)
-
-
-
 
     # WhatsApp Generic Sender
     def _send_whatsapp_link(self, boolean_field, date_field, message):
@@ -1409,7 +1398,6 @@ class LeadsForm(models.Model):
         msg = f"Hi {self.name},\n\nThank you for attending the career counselling session. Let's start your journey!"
         return self._send_cma_whatsapp('cma_usa_counselling_done', 'cma_usa_counselling_date', msg)
 
-
     # ACCA
 
     def _send_acca_whatsapp(self, bool_field, date_field, message):
@@ -1501,10 +1489,6 @@ class LeadsForm(models.Model):
     def action_acca_counselling_done(self):
         msg = f"Hi {self.name},\n\nThank you for attending the ACCA career counselling session. Let's start your global career!"
         return self._send_acca_whatsapp('acca_counselling_done', 'acca_counselling_date', msg)
-
-
-
-
 
     # Touch Point Management
     first_call = fields.Boolean(string="First Call", default=False)
@@ -1644,7 +1628,63 @@ class LeadsForm(models.Model):
 
     # ── Nurturing Dashboard ─────────────────────────────────────────────────
     @api.model
-    def get_nurturing_dashboard_counts(self, date_from=False, date_to=False):
+    def _seminar_table_exists(self):
+        """True if the (optional) seminar_17 module's `seminar.leads` table
+        is present in this database. custom_leads does NOT depend on
+        seminar_17 — it's the other way around — so any SQL that touches
+        seminar_leads must be guarded by this check first."""
+        cr = self.env.cr
+        cr.execute("SELECT to_regclass('public.seminar_leads') IS NOT NULL")
+        return bool(cr.fetchone()[0])
+
+    @api.model
+    def get_seminar_conductors(self):
+        """
+        List of {id, name} for every user who has ever conducted a seminar
+        (`seminar.leads.attended_by`), for the Nurturing Dashboard's
+        "Seminar Conducted By" filter dropdown.
+
+        Returns [] when the seminar_17 module isn't installed — the filter
+        simply doesn't appear on the dashboard in that case.
+        """
+        if not self._seminar_table_exists():
+            return []
+        cr = self.env.cr
+        # res_users has no real `name` column (it's related through
+        # partner_id, not a stored table column) — get the distinct user
+        # ids by plain SQL, then resolve display names via the ORM, which
+        # follows that relation correctly regardless of Odoo version.
+        cr.execute(
+            """
+            SELECT DISTINCT attended_by
+            FROM   seminar_leads
+            WHERE  attended_by IS NOT NULL
+            """
+        )
+        user_ids = [row[0] for row in cr.fetchall()]
+        users = self.env['res.users'].sudo().browse(user_ids).exists()
+        people = [{'id': u.id, 'name': u.name} for u in users]
+        people.sort(key=lambda p: (p['name'] or '').lower())
+        return people
+
+    @api.model
+    def get_seminar_ids_for_conductor(self, attended_by_id):
+        """
+        List of `seminar.leads` ids conducted by the given user. Used
+        client-side to build drill-through list-view domains (e.g.
+        ['seminar_id', 'in', ids]) when the Nurturing Dashboard's "Seminar
+        Conducted By" filter is active — `seminar_id` on leads.logic is a
+        plain Integer (not a Many2one), so it can't be dot-traversed in an
+        Odoo domain and has to be resolved to concrete ids first.
+        """
+        if not attended_by_id or not self._seminar_table_exists():
+            return []
+        cr = self.env.cr
+        cr.execute("SELECT id FROM seminar_leads WHERE attended_by = %s", (attended_by_id,))
+        return [row[0] for row in cr.fetchall()]
+
+    @api.model
+    def get_nurturing_dashboard_counts(self, date_from=False, date_to=False, attended_by_id=False):
         """
         Counts of leads per `student_category`, for the Nurturing Dashboard.
         The Plus One/Two and B.Com 1st-3rd Year categories count all leads
@@ -1659,6 +1699,11 @@ class LeadsForm(models.Model):
         date_from / date_to: 'YYYY-MM-DD' strings, filtered on
         `date_of_adding`. Both optional — an open end means "to present".
 
+        attended_by_id: when set, restricts everything to leads that came
+        from a seminar CONDUCTED BY that user (leads_logic.seminar_id →
+        seminar.leads.attended_by). Requires seminar_17 to be installed;
+        silently ignored otherwise.
+
         Role logic mirrors get_dashboard_stage_counts(): Admission Officers
         only see their own leads; everyone else sees all leads.
         """
@@ -1667,12 +1712,12 @@ class LeadsForm(models.Model):
         table = self._table  # 'leads_logic'
 
         is_admission_officer = (
-            user.has_group('custom_leads.group_lead_users')
-            and not user.has_group('custom_leads.group_lead_team_lead')
-            and not user.has_group('custom_leads.group_lead_manager')
-            and not user.has_group('custom_leads.group_super_admin')
-            and not user.has_group('custom_leads.group_lead_digital_head')
-            and not user.has_group('custom_leads.group_lead_branch_head')
+                user.has_group('custom_leads.group_lead_users')
+                and not user.has_group('custom_leads.group_lead_team_lead')
+                and not user.has_group('custom_leads.group_lead_manager')
+                and not user.has_group('custom_leads.group_super_admin')
+                and not user.has_group('custom_leads.group_lead_digital_head')
+                and not user.has_group('custom_leads.group_lead_branch_head')
         )
 
         where = ["student_category IS NOT NULL"]
@@ -1683,6 +1728,12 @@ class LeadsForm(models.Model):
         if date_to:
             where.append("date_of_adding <= %s")
             args.append(date_to)
+
+        if attended_by_id and self._seminar_table_exists():
+            where.append(
+                "seminar_id IN (SELECT id FROM seminar_leads WHERE attended_by = %s)"
+            )
+            args.append(attended_by_id)
 
         owner_id = False
         if is_admission_officer:
@@ -1793,7 +1844,7 @@ class LeadsForm(models.Model):
         return {'scanned': len(rows), 'updated': updated}
 
     @api.model
-    def get_nurturing_activity_counts(self, date_from=False, date_to=False):
+    def get_nurturing_activity_counts(self, date_from=False, date_to=False, attended_by_id=False):
         """
         Counts how many WhatsApp / SMS exports and calls were made in the
         given date range, for the Nurturing Dashboard's activity strip.
@@ -1802,6 +1853,15 @@ class LeadsForm(models.Model):
           `purpose` (each row = one export batch; record_count = leads in it).
         - Calls come from the existing `lead.call.log`.
 
+        attended_by_id: when set, restricts everything to activity on leads
+        that came from a seminar CONDUCTED BY that user (same meaning as on
+        get_nurturing_dashboard_counts). Requires seminar_17 to be
+        installed; silently ignored otherwise. Filtering exports this way
+        switches 'leads_sent' from the batch's stored record_count to an
+        exact count of the leads in that batch that match the conductor,
+        via the lead_ids m2m — a bit more work, only paid when this filter
+        is actually used.
+
         Role logic mirrors the other dashboard methods: Admission Officers
         only see their own activity; everyone else sees everything.
         """
@@ -1809,13 +1869,15 @@ class LeadsForm(models.Model):
         user = self.env.user
 
         is_admission_officer = (
-            user.has_group('custom_leads.group_lead_users')
-            and not user.has_group('custom_leads.group_lead_team_lead')
-            and not user.has_group('custom_leads.group_lead_manager')
-            and not user.has_group('custom_leads.group_super_admin')
-            and not user.has_group('custom_leads.group_lead_digital_head')
-            and not user.has_group('custom_leads.group_lead_branch_head')
+                user.has_group('custom_leads.group_lead_users')
+                and not user.has_group('custom_leads.group_lead_team_lead')
+                and not user.has_group('custom_leads.group_lead_manager')
+                and not user.has_group('custom_leads.group_super_admin')
+                and not user.has_group('custom_leads.group_lead_digital_head')
+                and not user.has_group('custom_leads.group_lead_branch_head')
         )
+
+        filter_by_conductor = bool(attended_by_id) and self._seminar_table_exists()
 
         exp_where = ["1=1"]
         exp_args = []
@@ -1829,15 +1891,35 @@ class LeadsForm(models.Model):
             exp_where.append("user_id = %s")
             exp_args.append(user.id)
 
-        cr.execute(
-            f"""
-            SELECT purpose, COUNT(*) AS batches, COALESCE(SUM(record_count), 0) AS leads_sent
-            FROM   lead_export_history
-            WHERE  {" AND ".join(exp_where)}
-            GROUP  BY purpose
-            """,
-            exp_args,
-        )
+        if filter_by_conductor:
+            # lead_ids is a Many2many on lead.export.history — look up its
+            # actual relation table/columns via the ORM rather than
+            # hardcoding Odoo's auto-generated name.
+            m2m = self.env['lead.export.history']._fields['lead_ids']
+            rel_table, col_batch, col_lead = m2m.relation, m2m.column1, m2m.column2
+            cr.execute(
+                f"""
+                SELECT eh.purpose, COUNT(DISTINCT eh.id) AS batches,
+                       COUNT(DISTINCT rel.{col_lead}) AS leads_sent
+                FROM   lead_export_history eh
+                JOIN   {rel_table} rel ON rel.{col_batch} = eh.id
+                JOIN   leads_logic l ON l.id = rel.{col_lead}
+                WHERE  {" AND ".join(exp_where).replace('export_date', 'eh.export_date').replace('user_id', 'eh.user_id')}
+                       AND l.seminar_id IN (SELECT id FROM seminar_leads WHERE attended_by = %s)
+                GROUP  BY eh.purpose
+                """,
+                exp_args + [attended_by_id],
+            )
+        else:
+            cr.execute(
+                f"""
+                SELECT purpose, COUNT(*) AS batches, COALESCE(SUM(record_count), 0) AS leads_sent
+                FROM   lead_export_history
+                WHERE  {" AND ".join(exp_where)}
+                GROUP  BY purpose
+                """,
+                exp_args,
+            )
         export_rows = {row[0]: {'batches': row[1], 'leads_sent': row[2]} for row in cr.fetchall()}
 
         call_where = ["1=1"]
@@ -1851,6 +1933,12 @@ class LeadsForm(models.Model):
         if is_admission_officer:
             call_where.append("user_id = %s")
             call_args.append(user.id)
+        if filter_by_conductor:
+            call_where.append(
+                "lead_id IN (SELECT id FROM leads_logic WHERE seminar_id IN "
+                "(SELECT id FROM seminar_leads WHERE attended_by = %s))"
+            )
+            call_args.append(attended_by_id)
 
         cr.execute(
             f"""
@@ -1896,17 +1984,17 @@ class LeadsForm(models.Model):
         """
         from datetime import date, timedelta
 
-        user   = self.env.user
-        today  = date.today()
-        cr     = self.env.cr
+        user = self.env.user
+        today = date.today()
+        cr = self.env.cr
 
         is_admission_officer = (
-            user.has_group('custom_leads.group_lead_users')
-            and not user.has_group('custom_leads.group_lead_team_lead')
-            and not user.has_group('custom_leads.group_lead_manager')
-            and not user.has_group('custom_leads.group_super_admin')
-            and not user.has_group('custom_leads.group_lead_digital_head')
-            and not user.has_group('custom_leads.group_lead_branch_head')
+                user.has_group('custom_leads.group_lead_users')
+                and not user.has_group('custom_leads.group_lead_team_lead')
+                and not user.has_group('custom_leads.group_lead_manager')
+                and not user.has_group('custom_leads.group_super_admin')
+                and not user.has_group('custom_leads.group_lead_digital_head')
+                and not user.has_group('custom_leads.group_lead_branch_head')
         )
 
         # ── Helper: build (sql_fragment, params) for date filter ─────────
@@ -1918,31 +2006,31 @@ class LeadsForm(models.Model):
             if df == 'week':
                 days_since_sunday = (today.weekday() + 1) % 7
                 wk_start = today - timedelta(days=days_since_sunday)
-                wk_end   = wk_start + timedelta(days=7)
+                wk_end = wk_start + timedelta(days=7)
                 return f"{col} >= %s AND {col} < %s", [str(wk_start), str(wk_end)]
             if df == 'month':
                 mo_start = today.replace(day=1)
-                mo_end   = (mo_start.replace(month=mo_start.month % 12 + 1, day=1)
-                            if mo_start.month < 12
-                            else mo_start.replace(year=mo_start.year + 1, month=1, day=1))
+                mo_end = (mo_start.replace(month=mo_start.month % 12 + 1, day=1)
+                          if mo_start.month < 12
+                          else mo_start.replace(year=mo_start.year + 1, month=1, day=1))
                 return f"{col} >= %s AND {col} < %s", [str(mo_start), str(mo_end)]
-            return "TRUE", []   # 'all'
+            return "TRUE", []  # 'all'
 
-        table = self._table   # 'leads_logic'
+        table = self._table  # 'leads_logic'
 
         # ── 1. Overall stage counts — ONE query ───────────────────────────
-        owner_filter_sql  = ""
+        owner_filter_sql = ""
         owner_filter_args = []
         if is_admission_officer:
             employee = user.employee_id
             if employee:
-                owner_filter_sql  = "AND lead_owner = %s"
+                owner_filter_sql = "AND lead_owner = %s"
                 owner_filter_args = [employee.id]
             else:
                 # No employee linked → return empty counts
-                empty = {s: 0 for s in ['funnel','prospects','rnr_dnp','admission_done','re_try','alumni','junk']}
+                empty = {s: 0 for s in ['funnel', 'prospects', 'rnr_dnp', 'admission_done', 're_try', 'alumni', 'junk']}
                 return {'counts': empty, 'is_admission_officer': True,
-                        'officers': [], 'performers': {'day':None,'week':None,'month':None},
+                        'officers': [], 'performers': {'day': None, 'week': None, 'month': None},
                         'date_filter': date_filter}
 
         cr.execute(
@@ -1967,7 +2055,7 @@ class LeadsForm(models.Model):
         # Only currently active employees are included (resigned/inactive
         # staff are excluded).
         officers_data = []
-        performers    = {'day': None, 'week': None, 'month': None}
+        performers = {'day': None, 'week': None, 'month': None}
 
         if not is_admission_officer:
             cr.execute(
@@ -1988,7 +2076,7 @@ class LeadsForm(models.Model):
             rows = cr.fetchall()
 
             # Aggregate into per-officer dict
-            emp_map = {}   # emp_id -> {id, name, counts, total, calls}
+            emp_map = {}  # emp_id -> {id, name, counts, total, calls}
             emp_order = []
             for emp_id, emp_name, stage, cnt in rows:
                 if emp_id not in emp_map:
@@ -2039,17 +2127,17 @@ class LeadsForm(models.Model):
             # ── 3. Performers: best admission count per period — ONE query ─
             # Pull (emp_id, emp_name, period_label, count) for all three
             # windows in a single SQL CASE/GROUP BY.
-            today_str    = str(today)
-            tmrw_str     = str(today + timedelta(days=1))
-            days_sun     = (today.weekday() + 1) % 7
+            today_str = str(today)
+            tmrw_str = str(today + timedelta(days=1))
+            days_sun = (today.weekday() + 1) % 7
             wk_start_str = str(today - timedelta(days=days_sun))
-            wk_end_str   = str(today - timedelta(days=days_sun) + timedelta(days=7))
-            mo_start     = today.replace(day=1)
-            mo_end       = (mo_start.replace(month=mo_start.month % 12 + 1, day=1)
-                            if mo_start.month < 12
-                            else mo_start.replace(year=mo_start.year + 1, month=1, day=1))
+            wk_end_str = str(today - timedelta(days=days_sun) + timedelta(days=7))
+            mo_start = today.replace(day=1)
+            mo_end = (mo_start.replace(month=mo_start.month % 12 + 1, day=1)
+                      if mo_start.month < 12
+                      else mo_start.replace(year=mo_start.year + 1, month=1, day=1))
             mo_start_str = str(mo_start)
-            mo_end_str   = str(mo_end)
+            mo_end_str = str(mo_end)
 
             cr.execute(
                 f"""
@@ -2074,10 +2162,10 @@ class LeadsForm(models.Model):
                 ORDER  BY cnt DESC
                 """,
                 [
-                    today_str, tmrw_str,           # day
-                    wk_start_str, wk_end_str,       # week
-                    mo_start_str, mo_end_str,        # month
-                    mo_start_str, tmrw_str,          # outer filter (month start → tomorrow covers all)
+                    today_str, tmrw_str,  # day
+                    wk_start_str, wk_end_str,  # week
+                    mo_start_str, mo_end_str,  # month
+                    mo_start_str, tmrw_str,  # outer filter (month start → tomorrow covers all)
                 ],
             )
             perf_rows = cr.fetchall()
@@ -2507,8 +2595,7 @@ class LeadsForm(models.Model):
         return {'type': 'ir.actions.act_window', 'name': 'Allocation', 'res_model': 'allocation.tele_callers.wizard',
                 'view_mode': 'form', 'view_type': 'form', 'target': 'new', 'context': {'parent_obj': active_ids}}
 
-
-#     Lead Export History
+    #     Lead Export History
 
     def export_data(self, fields_to_export):
         # 1. Get the IP address
@@ -2567,11 +2654,11 @@ class LeadsForm(models.Model):
         # Restrict Admission Officers to only their own leads in all other views.
         # Team Leads are excluded — they see their team's leads via ir.rule instead.
         if self.env.user.has_group('custom_leads.group_lead_users') and not (
-            self.env.user.has_group('custom_leads.group_super_admin') or
-            self.env.user.has_group('custom_leads.group_lead_manager') or
-            self.env.user.has_group('custom_leads.group_lead_branch_head') or
-            self.env.user.has_group('custom_leads.group_lead_digital_head') or
-            self.env.user.has_group('custom_leads.group_lead_team_lead')
+                self.env.user.has_group('custom_leads.group_super_admin') or
+                self.env.user.has_group('custom_leads.group_lead_manager') or
+                self.env.user.has_group('custom_leads.group_lead_branch_head') or
+                self.env.user.has_group('custom_leads.group_lead_digital_head') or
+                self.env.user.has_group('custom_leads.group_lead_team_lead')
         ):
             from odoo.osv import expression
             domain = expression.AND([
@@ -2585,6 +2672,7 @@ class LeadsForm(models.Model):
                 domain
             ])
         return super()._search(domain, offset=offset, limit=limit, order=order, access_rights_uid=access_rights_uid)
+
 
 # --------------------------------------------------------------------------
 # Model: call.responses
@@ -2634,6 +2722,32 @@ class LeadResponse(models.Model):
                     subtype_xmlid="mail.mt_note"
                 )
         return records
+
+    def write(self, vals):
+        old_comments = {r.id: r.comment for r in self} if 'comment' in vals else {}
+        res = super(LeadResponse, self).write(vals)
+        if 'comment' in vals:
+            for record in self:
+                old_comment = old_comments.get(record.id)
+                if old_comment != record.comment and record.lead_id:
+                    safe_old = html_escape(old_comment or '')
+                    safe_new = html_escape(record.comment or '')
+                    message = Markup(
+                        "<div>"
+                        "<strong>✏️ Response Updated</strong><br/>"
+                        "<strong>By:</strong> %s<br/>"
+                        "<strong>Before:</strong> %s<br/>"
+                        "<strong>After:</strong> %s"
+                        "</div>"
+                    ) % (self.env.user.name, safe_old, safe_new)
+                    record.lead_id.message_post(
+                        body=message,
+                        subtype_xmlid="mail.mt_note"
+                    )
+        if 'is_editable' not in vals:
+            self.is_editable = False
+        return res
+
     def action_enable_edit(self):
         for rec in self:
             rec.is_editable = True
@@ -2644,7 +2758,7 @@ class LeadResponse(models.Model):
             user = record.user_id.name or "Unknown"
             date_str = record.response_time.strftime("%d-%b %H:%M") if record.response_time else ""
             comment_preview = (record.comment[:25] + '...') if record.comment and len(record.comment) > 25 else (
-                        record.comment or "")
+                    record.comment or "")
             name = f"{user} – {comment_preview} ({date_str})"
             result.append((record.id, name))
         return result
@@ -2679,6 +2793,65 @@ class LeadCallLog(models.Model):
     duration = fields.Char(string="Duration")
     recording_url = fields.Char(string="Recording URL")
     call_type = fields.Selection([('incoming', 'Incoming'), ('outgoing', 'Outgoing')], string="Call Type")
+
+    @api.model
+    def get_call_performance_counts(self, date_from=False, date_to=False):
+        """
+        Per-agent call activity for the Call Records OWL dashboard: total
+        calls, incoming/outgoing split, and answered/no-answer split.
+
+        date_from / date_to: 'YYYY-MM-DD' strings filtered on `call_time`.
+        Both optional — leaving both blank shows all-time totals.
+        """
+        cr = self.env.cr
+        where = ["user_id IS NOT NULL"]
+        args = []
+        if date_from:
+            where.append("call_time >= %s")
+            args.append(date_from)
+        if date_to:
+            where.append("call_time <= %s")
+            args.append(date_to + " 23:59:59")
+        where_sql = " AND ".join(where)
+
+        cr.execute(
+            f"""
+            SELECT user_id,
+                   COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE call_type = 'incoming') AS incoming,
+                   COUNT(*) FILTER (WHERE call_type = 'outgoing') AS outgoing,
+                   COUNT(*) FILTER (WHERE call_status ILIKE 'answer%%') AS answered,
+                   COUNT(*) FILTER (WHERE call_status NOT ILIKE 'answer%%' OR call_status IS NULL) AS not_answered
+            FROM   lead_call_log
+            WHERE  {where_sql}
+            GROUP  BY user_id
+            ORDER  BY total DESC
+            """,
+            args,
+        )
+        rows = cr.fetchall()
+        users = self.env['res.users'].sudo().browse([r[0] for r in rows])
+        names = {u.id: u.name for u in users}
+
+        agents = []
+        totals = {'total': 0, 'incoming': 0, 'outgoing': 0, 'answered': 0, 'not_answered': 0}
+        for user_id, total, incoming, outgoing, answered, not_answered in rows:
+            totals['total'] += total
+            totals['incoming'] += incoming
+            totals['outgoing'] += outgoing
+            totals['answered'] += answered
+            totals['not_answered'] += not_answered
+            agents.append({
+                'user_id': user_id,
+                'name': names.get(user_id, 'Unknown'),
+                'total': total,
+                'incoming': incoming,
+                'outgoing': outgoing,
+                'answered': answered,
+                'not_answered': not_answered,
+            })
+
+        return {'agents': agents, 'totals': totals}
 
 
 # --------------------------------------------------------------------------
@@ -2729,6 +2902,7 @@ class LeadFollowUp(models.Model):
                     body=f"✅ Follow-up marked as Done by {self.env.user.name} "
                          f"(Scheduled: {followup_time})"
                 )
+
 
 # --------------------------------------------------------------------------
 # Model: lead.followup.wizard
@@ -2856,8 +3030,8 @@ class LeadExportHistory(models.Model):
              "activity counters."
     )
     lead_ids = fields.Many2many('leads.logic', string='Leads Exported',
-                                 help="Exact leads included in this export — "
-                                      "what data was actually sent out.")
+                                help="Exact leads included in this export — "
+                                     "what data was actually sent out.")
 
 
 class LeadNurtureExportWizard(models.TransientModel):

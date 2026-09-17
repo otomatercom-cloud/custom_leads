@@ -11,6 +11,7 @@ const CATEGORIES = [
     { key: "bcom_2", label: "B.Com 2nd Year", caption: "Second-year B.Com students", icon: "fa-graduation-cap", accent: "c4" },
     { key: "bcom_3", label: "B.Com 3rd Year", caption: "Third-year B.Com students", icon: "fa-graduation-cap", accent: "c5" },
     { key: "meta_leads", label: "Meta Leads", caption: "Facebook / Instagram / WhatsApp leads", icon: "fa-bullhorn", accent: "c6" },
+    { key: "others", label: "Others", caption: "All other source campaigns", icon: "fa-ellipsis-h", accent: "c7" },
 ];
 
 const META_QUALITY = [
@@ -39,34 +40,54 @@ export class NurturingDashboard extends Component {
             dateTo: todayStr(),
             activity: { whatsapp: { batches: 0, leads_sent: 0 }, sms: { batches: 0, leads_sent: 0 },
                         call_exports: { batches: 0, leads_sent: 0 }, calls_made: 0 },
+            conductors: [],
+            attendedById: "",
+            conductorSeminarIds: [],
         });
-        onWillStart(() => this.loadCounts());
+        onWillStart(async () => {
+            const conductors = await this.orm.call("leads.logic", "get_seminar_conductors", []);
+            this.state.conductors = conductors || [];
+            await this.loadCounts();
+        });
     }
 
     get categories() { return CATEGORIES; }
     get metaQualityOptions() { return META_QUALITY; }
+    get hasConductorFilter() { return this.state.conductors.length > 0; }
 
     getCount(key) { return this.state.counts[key] || 0; }
     getMetaQualityCount(key) { return this.state.metaQuality[key] || 0; }
 
     async loadCounts() {
         this.state.loading = true;
-        const [dashboard, activity] = await Promise.all([
+        const attendedById = this.state.attendedById ? parseInt(this.state.attendedById, 10) : false;
+        const [dashboard, activity, seminarIds] = await Promise.all([
             this.orm.call(
                 "leads.logic", "get_nurturing_dashboard_counts", [],
-                { date_from: this.state.dateFrom || false, date_to: this.state.dateTo || false }
+                { date_from: this.state.dateFrom || false, date_to: this.state.dateTo || false,
+                  attended_by_id: attendedById }
             ),
             this.orm.call(
                 "leads.logic", "get_nurturing_activity_counts", [],
-                { date_from: this.state.dateFrom || false, date_to: this.state.dateTo || false }
+                { date_from: this.state.dateFrom || false, date_to: this.state.dateTo || false,
+                  attended_by_id: attendedById }
             ),
+            attendedById
+                ? this.orm.call("leads.logic", "get_seminar_ids_for_conductor", [attendedById])
+                : Promise.resolve([]),
         ]);
         this.state.counts = dashboard.counts || {};
         this.state.metaQuality = dashboard.meta_quality || {};
         this.state.total = dashboard.total || 0;
         this.state.isAdmissionOfficer = dashboard.is_admission_officer || false;
         this.state.activity = activity;
+        this.state.conductorSeminarIds = seminarIds || [];
         this.state.loading = false;
+    }
+
+    async onConductorChange(ev) {
+        this.state.attendedById = ev.target.value;
+        await this.loadCounts();
     }
 
     async onDateChange(field, ev) {
@@ -115,9 +136,22 @@ export class NurturingDashboard extends Component {
         return domain;
     }
 
+    // Domain fragment restricting to leads from seminars conducted by the
+    // selected conductor. seminar_id on leads.logic is a plain Integer, not
+    // a Many2one, so it can't be dot-traversed — the concrete seminar ids
+    // are resolved server-side (get_seminar_ids_for_conductor) and cached
+    // in state.conductorSeminarIds whenever the filter changes.
+    _conductorDomain(field = "seminar_id") {
+        if (!this.state.attendedById) return [];
+        // No seminars at all for this conductor in range → force an empty
+        // result instead of silently showing everyone (id -1 never matches).
+        const ids = this.state.conductorSeminarIds.length ? this.state.conductorSeminarIds : [-1];
+        return [[field, "in", ids]];
+    }
+
     openCategory(key) {
         const cat = CATEGORIES.find(c => c.key === key);
-        const domain = [["student_category", "=", key], ...this._dateDomain()];
+        const domain = [["student_category", "=", key], ...this._dateDomain(), ...this._conductorDomain()];
         if (key === "meta_leads") domain.push(["lead_stage_category", "=", "prospects"]);
         this.action.doAction({
             type: "ir.actions.act_window", name: `Nurturing — ${cat ? cat.label : key}`,
@@ -133,6 +167,7 @@ export class NurturingDashboard extends Component {
             ["lead_stage_category", "=", "prospects"],
             ["lead_quality", "=", quality],
             ...this._dateDomain(),
+            ...this._conductorDomain(),
         ];
         this.action.doAction({
             type: "ir.actions.act_window", name: `Meta Leads — ${q ? q.label : quality}`,
@@ -149,7 +184,11 @@ export class NurturingDashboard extends Component {
     }
 
     openExportHistory(purpose, label) {
-        const domain = [["purpose", "=", purpose], ...this._activityDateDomain("export_date")];
+        const domain = [
+            ["purpose", "=", purpose],
+            ...this._activityDateDomain("export_date"),
+            ...this._conductorDomain("lead_ids.seminar_id"),
+        ];
         this.action.doAction({
             type: "ir.actions.act_window", name: `Export History — ${label}`,
             res_model: "lead.export.history", views: [[false, "list"], [false, "form"]],
@@ -158,7 +197,7 @@ export class NurturingDashboard extends Component {
     }
 
     openCallLog() {
-        const domain = this._activityDateDomain("call_time");
+        const domain = [...this._activityDateDomain("call_time"), ...this._conductorDomain("lead_id.seminar_id")];
         this.action.doAction({
             type: "ir.actions.act_window", name: "Calls Made",
             res_model: "lead.call.log", views: [[false, "list"], [false, "form"]],

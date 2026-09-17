@@ -1,0 +1,125 @@
+.o_call_dash {
+    height: 100%;
+    min-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px;
+    background: #f6f8fb;
+    color: #172033;
+}
+.o_action_manager .o_call_dash { min-height: 0; }
+
+/* Header */
+.o_call_dash_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+.o_call_dash_kicker { color: #5b6b82; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.o_call_dash_header h1 { margin: 3px 0 4px; font-size: 26px; font-weight: 750; }
+.o_call_dash_header p { margin: 0; color: #64748b; font-size: 13px; }
+.o_call_dash_filters { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+/* KPI cards */
+.o_call_kpi_grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+@media (max-width: 1400px) { .o_call_kpi_grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 768px) { .o_call_kpi_grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.o_call_kpi_card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid #dbe4ef;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
+}
+.o_call_kpi_icon {
+    display: inline-flex;
+    width: 34px; height: 34px;
+    align-items: center; justify-content: center;
+    border-radius: 8px; color: #fff; font-size: 15px;
+}
+.o_call_kpi_value { font-size: 26px; line-height: 1; color: #0f172a; }
+.o_call_kpi_label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+
+.o_call_kpi_blue .o_call_kpi_icon { background: #2563eb; }
+.o_call_kpi_purple .o_call_kpi_icon { background: #7c3aed; }
+.o_call_kpi_green .o_call_kpi_icon { background: #16a34a; }
+.o_call_kpi_orange .o_call_kpi_icon { background: #ea580c; }
+.o_call_kpi_sky .o_call_kpi_icon { background: #0284c7; }
+.o_call_kpi_pink .o_call_kpi_icon { background: #db2777; }
+.o_call_kpi_violet .o_call_kpi_icon { background: #9333ea; }
+.o_call_kpi_amber .o_call_kpi_icon { background: #d97706; }
+.o_call_kpi_slate .o_call_kpi_icon { background: #475569; }
+
+/* Loading / empty */
+.o_call_dash_loading, .o_call_dash_empty {
+    padding: 40px; text-align: center; color: #64748b; font-size: 14px;
+}
+
+/* Team card */
+.o_call_team_card {
+    background: #fff;
+    border: 1px solid #dde5ef;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+.o_call_team_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef2f7;
+}
+.o_call_team_title { font-size: 15px; font-weight: 750; color: #172033; }
+.o_call_team_chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.o_call_chip {
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+}
+.o_call_chip_blue { background: #dbeafe; color: #1d4ed8; }
+.o_call_chip_purple { background: #ede9fe; color: #6d28d9; }
+.o_call_chip_green { background: #dcfce7; color: #15803d; }
+.o_call_chip_amber { background: #fef3c7; color: #b45309; }
+
+/* Table */
+.o_call_team_table_wrap { overflow-x: auto; }
+.o_call_team_table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.o_call_team_table th {
+    text-align: left; padding: 10px 12px; color: #64748b;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+    border-bottom: 1px solid #eef2f7; white-space: nowrap;
+}
+.o_call_team_table td {
+    padding: 10px 12px; border-bottom: 1px solid #f3f5f8; white-space: nowrap;
+}
+.o_call_agent_row { cursor: pointer; }
+.o_call_agent_row:hover { background: #f8fafc; }
+.o_call_agent_name { font-weight: 650; color: #172033; }
+.o_call_role_badge {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    background: #eef2f7; color: #475569;
+}
+
+.o_call_pct_wrap { display: flex; align-items: center; gap: 8px; min-width: 90px; }
+.o_call_pct_bar { flex: 1; height: 6px; border-radius: 999px; background: #e9eef5; overflow: hidden; }
+.o_call_pct_fill { height: 100%; border-radius: 999px; }
+.o_call_pct_good { background: #16a34a; }
+.o_call_pct_mid { background: #d97706; }
+.o_call_pct_low { background: #dc2626; }
+.o_call_pct_label { font-size: 12px; font-weight: 700; color: #475569; min-width: 32px; }
+
+.o_call_dash_caption { margin: 4px 4px 0; color: #94a3b8; font-size: 12px; }

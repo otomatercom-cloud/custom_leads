@@ -1866,7 +1866,8 @@
                             </group>
                         </page>
 
-                        <page string="Touch Points" name="touch_points" groups="custom_leads.group_lead_team_lead">
+                        <page string="Touch Points" name="touch_points"
+                              groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_branch_head,custom_leads.group_lead_manager,custom_leads.group_lead_digital_head,custom_leads.group_super_admin">
                             <group col="4" colspan="2">
                                 <group col="2">
                                     <field name="first_call" readonly="1"/>
@@ -1936,7 +1937,7 @@
                         </page>
 
                         <page string="History" name="history" colspan="2"
-                              groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_branch_head">
+                              groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_branch_head,custom_leads.group_lead_manager,custom_leads.group_lead_digital_head,custom_leads.group_super_admin">
                             <group string="Assignment History" colspan="2">
                                 <field name="assignment_history_ids" nolabel="1" colspan="2">
                                     <tree editable="bottom" create="0" delete="0">
@@ -1947,7 +1948,7 @@
                                 </field>
                             </group>
                             <group string="Lead Quality History" colspan="2"
-                                   groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_branch_head">
+                                   groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_branch_head,custom_leads.group_lead_manager,custom_leads.group_lead_digital_head,custom_leads.group_super_admin">
                                 <field name="quality_history_ids" nolabel="1" colspan="2">
                                     <tree editable="bottom" create="0" delete="0">
                                         <field name="change_date" readonly="1"/>

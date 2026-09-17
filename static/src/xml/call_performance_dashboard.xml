@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_leads.CallPerformanceDashboard">
+        <div class="o_call_perf_dashboard">
+
+            <!-- Header -->
+            <div class="o_call_perf_header">
+                <div>
+                    <div class="o_call_perf_kicker">Leads Management</div>
+                    <h1>Call Performance</h1>
+                    <p>How many calls each agent made or received.</p>
+                </div>
+                <div class="o_call_perf_actions">
+                    <button type="button" class="btn btn-light" t-on-click="loadCounts">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Date range bar -->
+            <div class="o_call_perf_daterange">
+                <div class="o_call_perf_daterange_field">
+                    <label>From</label>
+                    <input type="date" t-att-value="state.dateFrom"
+                           t-on-change="(ev) => this.onDateChange('dateFrom', ev)"/>
+                </div>
+                <div class="o_call_perf_daterange_field">
+                    <label>To</label>
+                    <input type="date" t-att-value="state.dateTo"
+                           t-on-change="(ev) => this.onDateChange('dateTo', ev)"/>
+                </div>
+                <button type="button" class="btn btn-link" t-on-click="today">Today</button>
+                <button type="button" class="btn btn-link" t-on-click="thisMonth">This Month</button>
+                <button type="button" class="btn btn-link" t-on-click="allTime">All Time</button>
+                <div class="o_call_perf_totals">
+                    <div><span>Total Calls</span><strong t-esc="state.totals.total"/></div>
+                    <div><span>Incoming</span><strong t-esc="state.totals.incoming"/></div>
+                    <div><span>Outgoing</span><strong t-esc="state.totals.outgoing"/></div>
+                    <div><span>Answered</span><strong t-esc="state.totals.answered"/></div>
+                </div>
+            </div>
+
+            <!-- Agent cards -->
+            <div t-if="state.loading" class="o_call_perf_grid">
+                <t t-foreach="[1,2,3,4]" t-as="n" t-key="n">
+                    <div class="o_call_perf_card o_call_perf_skeleton_card">
+                        <div class="o_call_perf_avatar o_call_perf_skeleton"/>
+                        <span class="o_call_perf_skeleton o_call_perf_skeleton_line"/>
+                        <span class="o_call_perf_skeleton o_call_perf_skeleton_num"/>
+                    </div>
+                </t>
+            </div>
+            <div t-elif="!state.agents.length" class="o_call_perf_empty">
+                No calls logged for this range.
+            </div>
+            <div t-else="" class="o_call_perf_grid">
+                <t t-foreach="state.agents" t-as="agent" t-key="agent.user_id">
+                    <div t-attf-class="o_call_perf_card o_call_perf_{{ accentFor(agent_index) }}">
+                        <button type="button" class="o_call_perf_card_main"
+                                t-on-click="() => this.openAgent(agent.user_id, agent.name)">
+                            <div class="o_call_perf_top">
+                                <span class="o_call_perf_avatar" t-esc="initialsFor(agent.name)"/>
+                                <span t-if="agent_index === 0" class="o_call_perf_crown"><i class="fa fa-trophy"/></span>
+                            </div>
+                            <span class="o_call_perf_name" t-esc="agent.name"/>
+                            <strong class="o_call_perf_count" t-esc="agent.total"/>
+                            <span class="o_call_perf_caption">total calls</span>
+                        </button>
+                        <div class="o_call_perf_chips">
+                            <span class="o_call_perf_chip o_call_perf_chip_in"
+                                  t-on-click="() => this.openAgent(agent.user_id, agent.name, [['call_type', '=', 'incoming']])">
+                                <i class="fa fa-arrow-down me-1"/>In: <strong t-esc="agent.incoming"/>
+                            </span>
+                            <span class="o_call_perf_chip o_call_perf_chip_out"
+                                  t-on-click="() => this.openAgent(agent.user_id, agent.name, [['call_type', '=', 'outgoing']])">
+                                <i class="fa fa-arrow-up me-1"/>Out: <strong t-esc="agent.outgoing"/>
+                            </span>
+                            <span class="o_call_perf_chip o_call_perf_chip_answered"
+                                  t-on-click="() => this.openAgent(agent.user_id, agent.name, [['call_status', 'ilike', 'answer']])">
+                                <i class="fa fa-check me-1"/>Answered: <strong t-esc="agent.answered"/>
+                            </span>
+                            <span class="o_call_perf_chip o_call_perf_chip_missed"
+                                  t-on-click="() => this.openAgent(agent.user_id, agent.name, [['call_status', 'not ilike', 'answer']])">
+                                <i class="fa fa-times me-1"/>No Answer: <strong t-esc="agent.not_answered"/>
+                            </span>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

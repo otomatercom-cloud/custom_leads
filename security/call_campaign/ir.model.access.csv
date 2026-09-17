@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_call_campaign_manager,call.campaign.manager,model_call_campaign,custom_leads.group_lead_manager,1,1,1,1
+access_call_campaign_super_admin,call.campaign.super_admin,model_call_campaign,custom_leads.group_super_admin,1,1,1,1
+access_call_campaign_team_lead,call.campaign.team_lead,model_call_campaign,custom_leads.group_lead_team_lead,1,1,1,0
+access_call_campaign_users,call.campaign.users,model_call_campaign,custom_leads.group_lead_users,1,1,1,0
+access_call_campaign_tele_callers,call.campaign.tele_callers,model_call_campaign,custom_leads.group_lead_tele_callers,1,1,1,0
+access_call_campaign_digital_team,call.campaign.digital_team,model_call_campaign,custom_leads.group_lead_digital_team,1,1,0,0
+access_call_campaign_digital_head,call.campaign.digital_head,model_call_campaign,custom_leads.group_lead_digital_head,1,1,0,0
+access_call_campaign_branch_head,call.campaign.branch_head,model_call_campaign,custom_leads.group_lead_branch_head,1,0,0,0
+access_call_campaign_crash_head,call.campaign.crash_head,model_call_campaign,custom_leads.group_crash_head,1,1,1,0
+access_call_campaign_crash_user,call.campaign.crash_user,model_call_campaign,custom_leads.group_crash_user,1,1,1,0
+
+access_call_campaign_quality_all,call.campaign.quality.all,model_call_campaign_quality,base.group_user,1,1,1,0

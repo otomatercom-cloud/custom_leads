@@ -41,6 +41,15 @@
                 <button type="button" class="btn btn-link" t-on-click="resetToDefault">
                     Reset to May 2026 – Present
                 </button>
+                <div t-if="hasConductorFilter" class="o_nurture_daterange_field">
+                    <label>Seminar Conducted By</label>
+                    <select t-on-change="onConductorChange" t-att-value="state.attendedById">
+                        <option value="">All</option>
+                        <t t-foreach="state.conductors" t-as="conductor" t-key="conductor.id">
+                            <option t-att-value="conductor.id" t-esc="conductor.name"/>
+                        </t>
+                    </select>
+                </div>
                 <div class="o_nurture_total">
                     <span>Total in range</span>
                     <strong t-esc="state.total"/>

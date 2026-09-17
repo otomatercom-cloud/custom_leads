@@ -37,8 +37,10 @@
 }
 .o_nurture_daterange_field { display: flex; flex-direction: column; gap: 4px; }
 .o_nurture_daterange_field label { font-size: 12px; font-weight: 700; color: #5b6b82; text-transform: uppercase; }
-.o_nurture_daterange_field input {
+.o_nurture_daterange_field input,
+.o_nurture_daterange_field select {
     border: 1px solid #d7dee8; border-radius: 8px; padding: 6px 10px; font-size: 14px;
+    background: #fff; min-width: 170px;
 }
 .o_nurture_total { margin-left: auto; text-align: right; }
 .o_nurture_total span { display: block; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; }
@@ -106,6 +108,7 @@
 .o_nurture_c4 .o_nurture_icon { background: #d97706; }
 .o_nurture_c5 .o_nurture_icon { background: #0891b2; }
 .o_nurture_c6 .o_nurture_icon { background: #e11d48; }
+.o_nurture_c7 .o_nurture_icon { background: #64748b; }
 
 .o_nurture_c1:hover { border-color: #c4b5fd; }
 .o_nurture_c2:hover { border-color: #93b4f7; }
@@ -113,6 +116,7 @@
 .o_nurture_c4:hover { border-color: #fcd34d; }
 .o_nurture_c5:hover { border-color: #67e8f9; }
 .o_nurture_c6:hover { border-color: #f3a6b7; }
+.o_nurture_c7:hover { border-color: #cbd5e1; }
 
 /* Meta Leads Hot/Warm/Cold breakdown */
 .o_nurture_meta_breakdown { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }

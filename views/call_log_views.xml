@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="lead_call_log_tree_view" model="ir.ui.view">
+        <field name="name">lead.call.log.tree</field>
+        <field name="model">lead.call.log</field>
+        <field name="arch" type="xml">
+            <tree string="Call Records" default_order="call_time desc" create="0">
+                <field name="call_time"/>
+                <field name="user_id" widget="many2one_avatar_user" string="Agent"/>
+                <field name="lead_id"/>
+                <field name="call_type"/>
+                <field name="caller_number"/>
+                <field name="duration"/>
+                <field name="call_status"/>
+                <field name="recording_url" widget="url"/>
+                <field name="remarks" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="lead_call_log_search_view" model="ir.ui.view">
+        <field name="name">lead.call.log.search</field>
+        <field name="model">lead.call.log</field>
+        <field name="arch" type="xml">
+            <search string="Call Records">
+                <field name="user_id" string="Agent"/>
+                <field name="lead_id"/>
+                <field name="caller_number"/>
+                <field name="call_status"/>
+                <field name="call_time"/>
+                <filter string="Today" name="today"
+                        domain="[('call_time', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                 ('call_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="This Week" name="this_week"
+                        domain="[('call_time', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter string="This Month" name="this_month"
+                        domain="[('call_time', '&gt;=', context_today().strftime('%Y-%m-01 00:00:00'))]"/>
+                <separator/>
+                <filter string="Incoming" name="incoming" domain="[('call_type', '=', 'incoming')]"/>
+                <filter string="Outgoing" name="outgoing" domain="[('call_type', '=', 'outgoing')]"/>
+                <separator/>
+                <filter string="Answered" name="answered" domain="[('call_status', 'ilike', 'answer')]"/>
+                <filter string="Not Answered" name="not_answered" domain="[('call_status', 'not ilike', 'answer')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Agent" name="group_agent" context="{'group_by': 'user_id'}"/>
+                    <filter string="Call Type" name="group_type" context="{'group_by': 'call_type'}"/>
+                    <filter string="Call Status" name="group_status" context="{'group_by': 'call_status'}"/>
+                    <filter string="Call Date" name="group_date" context="{'group_by': 'call_time:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="lead_call_log_action" model="ir.actions.act_window">
+        <field name="name">Call Records</field>
+        <field name="res_model">lead.call.log</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="lead_call_log_tree_view"/>
+        <field name="search_view_id" ref="lead_call_log_search_view"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No call records found.</p>
+            <p>Every call logged against any lead shows up here. Filter by Agent, date, call type or status from the search bar.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lead_call_log"
+              name="📞 Call Records"
+              parent="custom_leads.leads_main_menu"
+              action="lead_call_log_action"
+              sequence="3"/>
+
+</odoo>

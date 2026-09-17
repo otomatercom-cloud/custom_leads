@@ -31,6 +31,8 @@
         'views/re_enquiry_views.xml',
         'views/lead_dashboard.xml',
         'views/nurturing_dashboard.xml',
+        'views/call_log_views.xml',
+        'views/call_performance_dashboard.xml',
         'views/nurturing_category_views.xml',
         'data/followup_cron.xml',
         # 'views/lead_open_wizard_view.xml',
@@ -61,6 +63,9 @@
             'custom_leads/static/src/css/nurturing_dashboard.css',
             'custom_leads/static/src/js/nurturing_dashboard.js',
             'custom_leads/static/src/xml/nurturing_dashboard.xml',
+            'custom_leads/static/src/css/call_performance_dashboard.css',
+            'custom_leads/static/src/js/call_performance_dashboard.js',
+            'custom_leads/static/src/xml/call_performance_dashboard.xml',
             # 'custom_leads/static/src/js/lead_popup_listener.js',
 
         ],
