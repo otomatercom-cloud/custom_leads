@@ -129,6 +129,36 @@ export class NurturingDashboard extends Component {
         }
     }
 
+    async recategorizeAll() {
+        if (this.state.backfilling) return;
+        if (!confirm(
+            "This RE-GUESSES Student Category for every lead that has a Lead Source or " +
+            "Campaign, and OVERWRITES the current value — including leads already " +
+            "categorised (e.g. fixes Meta Leads that were only matched because the Lead " +
+            "Source was generically 'META'). Any manual corrections will be replaced by " +
+            "the fresh guess. Continue?"
+        )) return;
+
+        this.state.backfilling = true;
+        try {
+            const result = await this.orm.call(
+                "leads.logic", "recalculate_all_student_categories", [], { force: true }
+            );
+            this.notification.add(
+                `Scanned ${result.scanned} leads — re-categorised ${result.updated}, cleared ${result.cleared || 0} with no Source Campaign.`,
+                { type: "success", title: "Re-categorize complete" }
+            );
+            await this.loadCounts();
+        } catch (error) {
+            this.notification.add(
+                "Re-categorize failed — check you have permission, or try again.",
+                { type: "danger", title: "Re-categorize error" }
+            );
+        } finally {
+            this.state.backfilling = false;
+        }
+    }
+
     _dateDomain() {
         const domain = [];
         if (this.state.dateFrom) domain.push(["date_of_adding", ">=", this.state.dateFrom]);

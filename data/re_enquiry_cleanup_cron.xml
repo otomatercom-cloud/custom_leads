@@ -1,0 +1,24 @@
+<odoo>
+    <!--
+        Deletes Re-Enquiry (lead.re.enquiry) records older than 2 days,
+        every day at 8:00 PM IST (Asia/Kolkata = UTC+05:30, so 14:30 UTC
+        below). Only the last 2 days of re-enquiry data is kept; the
+        underlying leads.logic leads themselves are never touched — this
+        only prunes the lead.re.enquiry log records.
+
+        Odoo evaluates ir.cron nextcall/interval in UTC regardless of the
+        server's local timezone, which is why 20:00 IST is written here
+        as 14:30 UTC.
+    -->
+    <record id="ir_cron_cleanup_old_re_enquiries" model="ir.cron">
+        <field name="name">Re-Enquiry: Purge Data Older Than 2 Days (8 PM IST daily)</field>
+        <field name="model_id" ref="custom_leads.model_lead_re_enquiry"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_cleanup_old_re_enquiries(days_to_keep=2)</field>
+        <field name="active">True</field>
+        <field name="interval_type">days</field>
+        <field name="interval_number">1</field>
+        <field name="numbercall">-1</field>
+        <field name="nextcall">2026-09-21 14:30:00</field>
+    </record>
+</odoo>

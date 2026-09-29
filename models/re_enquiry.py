@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
+from datetime import timedelta
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -252,6 +253,77 @@ class LeadReEnquiry(models.Model):
             'res_id': self.lead_id.id,
             'view_mode': 'form',
             'target': 'current',
+        }
+
+    # ── Scheduled cleanup ───────────────────────────────────────────────────
+
+    @api.model
+    def _cron_cleanup_old_re_enquiries(self, days_to_keep=2, batch_size=500):
+        """Scheduled daily at 8:00 PM (IST) — keeps only the most recent
+        `days_to_keep` days of Re-Enquiry data (by Enquiry Date) and
+        permanently deletes everything older.
+
+        days_to_keep=2 (default): keeps today's and yesterday's records,
+        deletes anything with enquiry_date 2 or more days in the past.
+
+        Deletes in batches of `batch_size` records, committing after each
+        batch, instead of one giant unlink(). This matters a lot the
+        FIRST time this runs against a table that's already grown huge:
+        a single unlink() across tens of thousands of records (each one
+        also cascading through its mail.message / mail.followers /
+        activity records via mail.thread) can hold a long-running
+        transaction and lock, or simply time out. Batching keeps each
+        transaction small so the backlog drains steadily instead of
+        risking a failed all-or-nothing run. Once the backlog is
+        cleared, nightly runs only ever touch a small number of records
+        (whatever crossed 2 days old since yesterday), so batching costs
+        nothing going forward.
+
+        Run by ir_cron_cleanup_old_re_enquiries
+        (data/re_enquiry_cleanup_cron.xml). sudo() is used so the cron
+        (running as a system user) can see and delete every record
+        regardless of the usual record-rule ownership restrictions.
+        """
+        cutoff = fields.Date.today() - timedelta(days=days_to_keep - 1)
+        stale_ids = self.sudo().search([('enquiry_date', '<', cutoff)]).ids
+        total = len(stale_ids)
+        deleted = 0
+        for i in range(0, total, batch_size):
+            batch = self.sudo().browse(stale_ids[i:i + batch_size])
+            batch.unlink()
+            deleted += len(batch)
+            self.env.cr.commit()
+            _logger.info(
+                "Re-Enquiry cleanup: %s / %s deleted so far (Enquiry Date before %s).",
+                deleted, total, cutoff,
+            )
+        _logger.info(
+            "Re-Enquiry cleanup: finished — deleted %s record(s) with Enquiry Date "
+            "before %s (keeping the last %s day(s) of data).",
+            deleted, cutoff, days_to_keep,
+        )
+        return deleted
+
+    def action_purge_old_re_enquiries(self):
+        """Manual trigger for the same cleanup the 8 PM cron runs — a
+        'Purge Old Data Now' button on the Re-Enquiry list, for whenever
+        someone doesn't want to wait for tonight's scheduled run.
+        Restricted to the same roles as the bulk Approve/Reject buttons.
+        """
+        if not (self.env.user.has_group('custom_leads.group_lead_team_lead')
+                or self.env.user.has_group('custom_leads.group_lead_manager')
+                or self.env.user.has_group('custom_leads.group_super_admin')):
+            raise UserError(_("You don't have permission to purge Re-Enquiry data."))
+        count = self._cron_cleanup_old_re_enquiries(days_to_keep=2)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Re-Enquiry Cleanup"),
+                'message': _("Deleted %s record(s) older than 2 days.") % count,
+                'type': 'success',
+                'sticky': False,
+            },
         }
 
     # ── Private helpers ────────────────────────────────────────────────────

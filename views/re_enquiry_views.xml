@@ -24,6 +24,12 @@
                             string="❌ Reject"
                             type="object"
                             groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_super_admin"/>
+                    <!-- Manual run of the 8 PM auto-cleanup (keeps only last 2 days) -->
+                    <button name="action_purge_old_re_enquiries"
+                            string="🗑 Purge Old Data Now"
+                            type="object"
+                            confirm="This permanently deletes every Re-Enquiry record older than 2 days (by Enquiry Date). This cannot be undone. Continue?"
+                            groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_manager,custom_leads.group_super_admin"/>
                 </header>
                 <field name="reference_no"/>
                 <field name="lead_id"/>

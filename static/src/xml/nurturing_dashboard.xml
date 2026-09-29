@@ -23,6 +23,12 @@
                         <t t-if="state.backfilling">Backfilling…</t>
                         <t t-else="">Backfill All (Legacy Leads)</t>
                     </button>
+                    <button type="button" class="btn btn-danger" t-on-click="recategorizeAll"
+                            t-att-disabled="state.backfilling">
+                        <i class="fa fa-refresh me-1"/>
+                        <t t-if="state.backfilling">Working…</t>
+                        <t t-else="">Re-categorize All (Fix Existing)</t>
+                    </button>
                 </div>
             </div>
 

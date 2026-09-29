@@ -105,6 +105,12 @@ class LeadCallLogDashboard(models.Model):
         dialing-list stats (call.campaign: Assigned / Called / Pending).
 
         date_filter: 'today' | 'yesterday' | 'week' | 'month' | 'all'
+
+        Agent identity is res.users (that's what lead.call.log.user_id
+        actually points to) — NOT hr.employee. A telephony agent doesn't
+        need an hr.employee record or a Lead Team assignment to show up
+        here; team/role/reporting-TL are enrichment, added when available,
+        never a requirement for being listed.
         """
         from datetime import date, timedelta
 
@@ -126,98 +132,127 @@ class LeadCallLogDashboard(models.Model):
 
         date_from, date_to = _date_range(date_filter)
 
+        Users = self.env['res.users'].sudo()
+
         is_manager = user.has_group('custom_leads.group_lead_manager')
         is_super = user.has_group('custom_leads.group_super_admin')
         is_odoo_admin = user.has_group('base.group_system')
         is_tl = user.has_group('custom_leads.group_lead_team_lead')
-        employee = self.env['hr.employee'].sudo().search([('user_id', '=', user.id)], limit=1)
 
+        # ── Roster: WHO counts as an agent, independent of the date filter
+        # so switching Today/Week/Month/All Time never changes which rows
+        # show up — only their stats.
         if is_manager or is_super or is_odoo_admin:
             role = 'manager'
-            emp_domain = [('admission_team_id', '!=', False)]
+            # Anyone who has ever logged a call, OR is on a Lead Team, OR
+            # has ever had a daily dialing campaign generated for them.
+            cr.execute("SELECT DISTINCT user_id FROM lead_call_log WHERE user_id IS NOT NULL")
+            calling_user_ids = {row[0] for row in cr.fetchall()}
+            team_user_ids = set(Users.search([('admission_team_id', '!=', False)]).ids)
+            campaign_user_ids = set(
+                self.env['call.campaign'].sudo().search([('employee_id.user_id', '!=', False)])
+                .mapped('employee_id.user_id').ids
+            )
+            roster_ids = calling_user_ids | team_user_ids | campaign_user_ids
         elif is_tl:
             role = 'tl'
             teams = self.env['lead.team'].sudo().search([('team_lead_ids', 'in', [user.id])])
-            emp_domain = [('admission_team_id', 'in', teams.ids)] if teams else [('id', '=', 0)]
+            roster_ids = set(Users.search([('admission_team_id', 'in', teams.ids)]).ids) if teams else set()
         else:
             role = 'officer'
-            emp_domain = [('id', '=', employee.id)] if employee else [('id', '=', 0)]
-
-        employees = self.env['hr.employee'].sudo().search(emp_domain + [('active', '=', True)])
+            roster_ids = {user.id}
 
         empty_kpi = dict(assigned=0, total_calls=0, connected=0, outgoing=0, incoming=0,
                           called_leads=0, pending=0, recordings=0, talk_seconds=0, talk_time='00:00:00')
-        if not employees:
+        if not roster_ids:
             return {'role': role, 'date_filter': date_filter, 'date_from': str(date_from),
                     'date_to': str(date_to), 'kpi': empty_kpi, 'teams': []}
 
-        emp_ids = employees.ids
+        # Note: intentionally NOT filtering by active=True here. The raw SQL
+        # above bypasses Odoo's implicit "hide archived records" behaviour on
+        # purpose — an agent whose login was later archived (left the
+        # company, telephony-only account, etc.) should still show up with
+        # their historical call stats. Re-adding an active filter here would
+        # silently drop them again, which is exactly what caused agents with
+        # real call logs to disappear from every date filter.
+        agents = Users.browse(list(roster_ids)).exists()
+        if not agents:
+            return {'role': role, 'date_filter': date_filter, 'date_from': str(date_from),
+                    'date_to': str(date_to), 'kpi': empty_kpi, 'teams': []}
 
-        # ── 1. Telephony stats per employee, ONE query ───────────────────
+        agent_ids = agents.ids
+
+        # ── 1. Telephony stats per agent (res.users), ONE query ──────────
         cr.execute(
             """
-            SELECT e.id,
+            SELECT u.id,
                    COUNT(cl.id)                                                       AS total_calls,
                    COUNT(cl.id) FILTER (WHERE cl.call_type = 'outgoing')              AS outgoing,
                    COUNT(cl.id) FILTER (WHERE cl.call_type = 'incoming')              AS incoming,
                    COUNT(cl.id) FILTER (WHERE cl.is_connected)                        AS connected,
                    COUNT(cl.id) FILTER (WHERE cl.has_recording)                       AS recordings,
                    COALESCE(SUM(cl.duration_seconds), 0)                              AS talk_seconds
-            FROM   hr_employee e
-            LEFT JOIN res_users u ON u.id = e.user_id
+            FROM   res_users u
             LEFT JOIN lead_call_log cl
                    ON cl.user_id = u.id
                   AND cl.call_date >= %s AND cl.call_date <= %s
-            WHERE  e.id = ANY(%s)
-            GROUP  BY e.id
+            WHERE  u.id = ANY(%s)
+            GROUP  BY u.id
             """,
-            (date_from, date_to, emp_ids),
+            (date_from, date_to, agent_ids),
         )
         call_map = {row[0]: row[1:] for row in cr.fetchall()}
 
-        # ── 2. Today's dialing-list stats per employee (call.campaign) ───
+        # ── 2. Today's dialing-list stats per agent (call.campaign) ──────
+        # call.campaign links to hr.employee (lead ownership lives there),
+        # so agents with no hr.employee record simply get 0s here — that's
+        # correct, not a bug: they can still have full call stats above.
         Campaign = self.env['call.campaign'].sudo()
-        campaigns = Campaign.search([('employee_id', 'in', emp_ids)])
-        camp_map = {c.employee_id.id: c for c in campaigns if c.employee_id}
+        emp_to_user = {a.employee_id.id: a.id for a in agents if a.employee_id}
+        emp_ids = list(emp_to_user.keys())
+        camp_map = {}  # user_id -> campaign
+        if emp_ids:
+            campaigns = Campaign.search([('employee_id', 'in', emp_ids)])
+            for c in campaigns:
+                if c.employee_id and c.employee_id.id in emp_to_user:
+                    camp_map[emp_to_user[c.employee_id.id]] = c
 
-        missing_ids = [eid for eid in emp_ids if eid not in camp_map]
-        if missing_ids:
-            today_str = today.strftime('%Y-%m-%d')
-            name_to_emp = {}
-            for emp in self.env['hr.employee'].sudo().browse(missing_ids):
-                name_to_emp['Daily Campaign - %s - %s' % (emp.name, today_str)] = emp.id
-            if name_to_emp:
-                for camp in Campaign.search([('name', 'in', list(name_to_emp.keys()))]):
-                    emp_id = name_to_emp.get(camp.name)
-                    if emp_id:
-                        camp_map[emp_id] = camp
+            missing_emp_ids = [eid for eid in emp_ids if emp_to_user[eid] not in camp_map]
+            if missing_emp_ids:
+                today_str = today.strftime('%Y-%m-%d')
+                name_to_user = {}
+                for emp in self.env['hr.employee'].sudo().browse(missing_emp_ids):
+                    name_to_user['Daily Campaign - %s - %s' % (emp.name, today_str)] = emp_to_user[emp.id]
+                if name_to_user:
+                    for camp in Campaign.search([('name', 'in', list(name_to_user.keys()))]):
+                        uid = name_to_user.get(camp.name)
+                        if uid:
+                            camp_map[uid] = camp
 
-        # ── 3. Team / role lookups (small, human-scale — plain ORM) ──────
-        teams = self.env['lead.team'].sudo().search([])
-        team_by_id = {t.id: t for t in teams}
+        # ── 3. Role lookups (small, human-scale — plain ORM) ──────────────
         tl_group = self.env.ref('custom_leads.group_lead_team_lead', raise_if_not_found=False)
         tl_user_ids = set(tl_group.users.ids) if tl_group else set()
 
-        def build_agent_row(emp):
-            stats = call_map.get(emp.id, (0, 0, 0, 0, 0, 0))
+        def build_agent_row(agent):
+            stats = call_map.get(agent.id, (0, 0, 0, 0, 0, 0))
             total_calls, outgoing, incoming, connected, recordings, talk_seconds = stats
             not_connected = total_calls - connected
             connect_pct = round((connected / total_calls) * 100) if total_calls else 0
             avg_seconds = round(talk_seconds / connected) if connected else 0
 
-            camp = camp_map.get(emp.id)
+            camp = camp_map.get(agent.id)
             assigned = camp.lead_count if camp else 0
             called_leads = camp.called_count if camp else 0
             pending = camp.pending_count if camp else 0
 
-            team = emp.admission_team_id
+            team = agent.admission_team_id
             reporting_tl = ', '.join(team.team_lead_ids.mapped('name')) if team else ''
-            role_label = 'Team Lead' if (emp.user_id and emp.user_id.id in tl_user_ids) else 'Officer'
+            role_label = 'Team Lead' if agent.id in tl_user_ids else 'Officer'
 
             return {
-                'employee_id': emp.id,
-                'user_id': emp.user_id.id if emp.user_id else False,
-                'name': emp.name,
+                'employee_id': agent.employee_id.id if agent.employee_id else 0,
+                'user_id': agent.id,
+                'name': agent.employee_id.name if agent.employee_id else agent.name,
                 'role': role_label,
                 'reporting_tl': reporting_tl,
                 'assigned': assigned,
@@ -239,13 +274,13 @@ class LeadCallLogDashboard(models.Model):
         # ── 4. Group agents by team, keep "Unassigned" bucket ────────────
         teams_out = {}
         order = []
-        for emp in employees.sorted(key=lambda e: e.name or ''):
-            team = emp.admission_team_id
+        for agent in agents.sorted(key=lambda a: a.name or ''):
+            team = agent.admission_team_id
             key = team.id if team else 0
             if key not in teams_out:
                 teams_out[key] = {'id': key, 'name': team.name if team else 'Unassigned', 'agents': []}
                 order.append(key)
-            teams_out[key]['agents'].append(build_agent_row(emp))
+            teams_out[key]['agents'].append(build_agent_row(agent))
 
         kpi = dict(assigned=0, total_calls=0, connected=0, outgoing=0, incoming=0,
                    called_leads=0, pending=0, recordings=0, talk_seconds=0)

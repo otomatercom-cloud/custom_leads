@@ -35,6 +35,7 @@
         'views/call_performance_dashboard.xml',
         'views/nurturing_category_views.xml',
         'data/followup_cron.xml',
+        'data/re_enquiry_cleanup_cron.xml',
         # 'views/lead_open_wizard_view.xml',
         'views/leads_schedule_wizard_view.xml',
         'views/leads_funnel_wizard_view.xml',
