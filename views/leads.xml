@@ -86,6 +86,7 @@
                   decoration-warning="lead_stage_category == 'rnr_dnp'"
                   decoration-muted="lead_stage_category == 'junk'">
                 <field name="date_of_adding" string="Added Date"/>
+                <field name="create_date" string="Created Date &amp; Time" widget="datetime" optional="show"/>
                 <field name="reference_no"/>
 
                 <field name="name"/>
@@ -2071,6 +2072,12 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('date_of_adding', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('date_of_adding', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Created: Last 24 Hours" name="created_last_24h"
+                        domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
+                <filter string="Created: Last 30 Days" name="created_last_30d"
+                        domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
+                <separator/>
+                <filter string="Created Date" name="group_created_day" context="{'group_by': 'create_date:day'}"/>
                 <field name="reference_no" string="Reference"/>
                 <field name="phone_number" string="Mobile Number"/>
                 <field name="leads_source" string="Lead Source"/>
@@ -2096,6 +2103,12 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Created: Last 24 Hours" name="created_last_24h"
+                        domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
+                <filter string="Created: Last 30 Days" name="created_last_30d"
+                        domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
+                <separator/>
+                <filter string="Created Date" name="group_created_day" context="{'group_by': 'create_date:day'}"/>
                 <field name="reference_no" string="Reference"/>
                 <field name="phone_number" string="Mobile Number"/>
                 <field name="leads_source" string="Lead Source"/>
