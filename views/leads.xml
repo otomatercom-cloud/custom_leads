@@ -91,8 +91,8 @@
                 <field name="called_delay_display" string="Called After" optional="show"/>
                 <field name="first_assigned_at" string="First Assigned On" widget="datetime" optional="hide"/>
                 <field name="first_call_at" string="First Called On" widget="datetime" optional="hide"/>
-                <field name="assigned_delay_minutes" string="Assign Delay (min)" optional="hide" avg="Avg"/>
-                <field name="called_delay_minutes" string="Call Delay (min)" optional="hide" avg="Avg"/>
+                <field name="assigned_delay_hours" string="Assign Delay (Hrs)" widget="float_time" optional="show" avg="Avg"/>
+                <field name="called_delay_hours" string="Call Delay (Hrs)" widget="float_time" optional="show" avg="Avg"/>
                 <field name="reference_no"/>
 
                 <field name="name"/>
@@ -2085,8 +2085,10 @@
 
                 <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
                 <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
-                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_minutes', '&gt;', 60)]"/>
-                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_minutes', '&gt;', 60)]"/>
+                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_hours', '&gt;', 1)]"/>
+                <filter string="Called after 24 hours+" name="call_delay_24h" domain="[('called_delay_hours', '&gt;', 24)]"/>
+                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_hours', '&gt;', 1)]"/>
+                <filter string="Assigned after 24 hours+" name="assign_delay_24h" domain="[('assigned_delay_hours', '&gt;', 24)]"/>
                 <separator/>
                 <filter string="Created: Last 24 Hours" name="created_last_24h"
                         domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
@@ -2121,8 +2123,10 @@
 
                 <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
                 <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
-                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_minutes', '&gt;', 60)]"/>
-                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_minutes', '&gt;', 60)]"/>
+                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_hours', '&gt;', 1)]"/>
+                <filter string="Called after 24 hours+" name="call_delay_24h" domain="[('called_delay_hours', '&gt;', 24)]"/>
+                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_hours', '&gt;', 1)]"/>
+                <filter string="Assigned after 24 hours+" name="assign_delay_24h" domain="[('assigned_delay_hours', '&gt;', 24)]"/>
                 <separator/>
                 <filter string="Created: Last 24 Hours" name="created_last_24h"
                         domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
