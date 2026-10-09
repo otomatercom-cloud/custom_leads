@@ -333,9 +333,7 @@ class LeadsForm(models.Model):
         for record in self:
             quality = record.lead_quality
 
-            if quality in ['hot', 'warm', 'cold', 'call_later',
-                            'waiting_for_admission',
-                           'crash_lead', 'already_joined']:
+            if quality in ['hot', 'warm', 'cold', 'call_later', 'crash_lead', 'already_joined']:
                 record.lead_stage_category = 'prospects'
 
             elif quality in ['new', 'first_attempt','follow_up']:
@@ -350,7 +348,7 @@ class LeadsForm(models.Model):
             elif quality in ['not_responding', 'not_reachable']:
                 record.lead_stage_category = 'rnr_dnp'
 
-            elif quality in ['admission', 'converted']:
+            elif quality in ['admission', 'converted','waiting_for_admission']:
                 record.lead_stage_category = 'admission_done'
 
             elif quality in ['bad_lead', 'not_enquiry',
