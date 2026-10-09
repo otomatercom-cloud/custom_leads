@@ -1852,16 +1852,28 @@
                             </group>
                         </page>
 
+                        <!-- Visible to EVERY user who can open a lead (Admission Officers, Tele Callers, Team Leads...) -->
+                        <page string="Response Time" name="response_time">
+                            <group>
+                                <group string="Assignment">
+                                    <field name="create_date" string="Created Date &amp; Time" widget="datetime"/>
+                                    <field name="first_assigned_at" string="First Assigned On" widget="datetime"/>
+                                    <field name="assigned_delay_display" string="Assigned After"/>
+                                    <field name="assigned_delay_hours" string="Assign Delay (Hrs)" widget="float_time"/>
+                                </group>
+                                <group string="First Call">
+                                    <field name="first_call_at" string="First Called On" widget="datetime"/>
+                                    <field name="called_delay_display" string="Called After"/>
+                                    <field name="called_delay_hours" string="Call Delay (Hrs)" widget="float_time"/>
+                                </group>
+                            </group>
+                        </page>
+
                         <page string="Dates &amp; Timeline" name="timeline"
                               groups="custom_leads.group_lead_team_lead,custom_leads.group_lead_custom_users">
                             <group>
                                 <group string="Lifecycle Dates">
                                     <field name="date_of_adding"/>
-                                    <field name="create_date" string="Created Date &amp; Time" widget="datetime"/>
-                                    <field name="first_assigned_at" widget="datetime"/>
-                                    <field name="assigned_delay_display"/>
-                                    <field name="first_call_at" widget="datetime"/>
-                                    <field name="called_delay_display"/>
                                     <field name="assigned_date"/>
                                     <field name="reassign_date"/>
                                     <field name="re_allocation_date"/>
