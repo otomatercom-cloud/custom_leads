@@ -2095,6 +2095,7 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('date_of_adding', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('date_of_adding', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Waiting for Auto Assign" name="waiting_auto_assign" domain="[('pending_auto_assign', '=', True)]"/>
                 <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
                 <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
                 <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_hours', '&gt;', 1)]"/>
@@ -2133,6 +2134,7 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Waiting for Auto Assign" name="waiting_auto_assign" domain="[('pending_auto_assign', '=', True)]"/>
                 <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
                 <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
                 <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_hours', '&gt;', 1)]"/>

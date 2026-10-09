@@ -705,6 +705,9 @@ class LeadsForm(models.Model):
     admission_amount = fields.Float(string="Admission Fee")
     date_of_receipt = fields.Date(string="Date of Receipt")
     student_profile_created = fields.Boolean(string="Student Profile Created")
+    pending_auto_assign = fields.Boolean(
+        string="Waiting for Auto Assign", default=False, copy=False, index=True,
+        help="Lead arrived outside round-robin hours (or no officer present) and is waiting to be assigned.")
     crash_lead = fields.Boolean(string="Crash Lead")
     stream = fields.Char(string="Stream")
     digital_head_id = fields.Many2one('res.users', string='Digital Head')
@@ -2699,9 +2702,16 @@ class LeadsForm(models.Model):
         # new lead with no owner chosen goes to the next officer of the pool.
         if ('lead_owner' not in values and not self.env.context.get('skip_auto_assign')
                 and not self.env.user.has_group('custom_leads.group_lead_users')):
-            auto_emp = self.env['lead.auto.assign.pool']._next_employee()
+            Pool = self.env['lead.auto.assign.pool']
+            auto_emp = Pool._next_employee()
             if auto_emp:
                 values['lead_owner'] = auto_emp.id
+            elif Pool.sudo().search_count([('is_enabled', '=', True), ('active', '=', True),
+                                           ('company_id', '=', self.env.company.id)]):
+                # pool is on but closed (after 7 PM / before 10:45 AM) or nobody present:
+                # keep the lead unassigned; the cron assigns it when the window opens.
+                values['lead_owner'] = False
+                values['pending_auto_assign'] = True
         lead = super(LeadsForm, self).create(values)
         if lead.lead_owner:
             self.env['lead.assignment.history'].create(

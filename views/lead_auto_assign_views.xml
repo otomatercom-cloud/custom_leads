@@ -8,6 +8,9 @@
                 <field name="name"/>
                 <field name="is_enabled" widget="boolean_toggle"/>
                 <field name="member_count"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="pending_count"/>
                 <field name="last_user_id"/>
                 <field name="last_assigned_on"/>
                 <field name="assigned_total"/>
@@ -21,12 +24,28 @@
         <field name="model">lead.auto.assign.pool</field>
         <field name="arch" type="xml">
             <form string="Auto Assign Pool">
+                <header>
+                    <button name="action_assign_pending_now" type="object" string="Assign Waiting Leads Now"
+                            class="btn-primary" invisible="pending_count == 0"/>
+                </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1><field name="name"/></h1>
                     </div>
+                    <group>
+                        <group string="Working Window">
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="tz"/>
+                            <field name="skip_sunday"/>
+                            <field name="require_presence"/>
+                        </group>
+                        <group string="Status">
+                            <field name="pending_count"/>
+                        </group>
+                    </group>
                     <group>
                         <group>
                             <field name="is_enabled" widget="boolean_toggle"/>
@@ -43,8 +62,10 @@
                     <field name="member_ids" widget="many2many_tags" options="{'no_create': True}"
                            placeholder="Add the Admission Officers who should receive new leads..."/>
                     <div class="text-muted mt-2">
-                        Every new lead that comes in without an owner (website, import, API, Digital Team,
-                        Tele Callers, Team Lead...) is given to the next officer in this list, one after another.
+                        Inside the working window, every new lead without an owner (website, import, API, Digital Team,
+                        Tele Callers, Team Lead...) goes to the next PRESENT officer in this list, one after another.
+                        Leads that arrive after the end time (or when nobody is present) wait and are assigned
+                        automatically when the window opens (checked every 5 minutes).
                         Leads created by an Admission Officer stay with that officer.
                     </div>
                 </sheet>
