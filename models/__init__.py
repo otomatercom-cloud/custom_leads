@@ -1,6 +1,7 @@
 from . import allocation
 from . import connection
 from . import lead_team
+from . import lead_auto_assign
 from . import leads
 from . import re_enquiry
 from . import source

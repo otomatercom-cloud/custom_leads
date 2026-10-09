@@ -2694,6 +2694,14 @@ class LeadsForm(models.Model):
             guess = self._guess_student_category(src_name, camp_name)
             if guess:
                 values['student_category'] = guess
+        # ── Round-robin auto assignment (pool set by Team Lead / Admin) ────
+        # Leads created by an Admission Officer stay with that officer; every other
+        # new lead with no owner chosen goes to the next officer of the pool.
+        if ('lead_owner' not in values and not self.env.context.get('skip_auto_assign')
+                and not self.env.user.has_group('custom_leads.group_lead_users')):
+            auto_emp = self.env['lead.auto.assign.pool']._next_employee()
+            if auto_emp:
+                values['lead_owner'] = auto_emp.id
         lead = super(LeadsForm, self).create(values)
         if lead.lead_owner:
             self.env['lead.assignment.history'].create(

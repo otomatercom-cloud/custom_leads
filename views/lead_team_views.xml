@@ -141,7 +141,7 @@
         <field name="res_model">res.users</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_admission_officers_tree"/>
-        <field name="domain">[('groups_id', 'in', [ref('custom_leads.group_lead_users')])]</field>
+        <field name="domain" eval="[('groups_id', 'in', [ref('custom_leads.group_lead_users')])]"/>
         <field name="context">{'create': False}</field>
         <field name="help" type="html">
             <p>

@@ -19,6 +19,7 @@
         'data/re_enquiry_sequence.xml',
         'views/leads.xml',
         'views/lead_team_views.xml',
+        'views/lead_auto_assign_views.xml',
         'views/team_bulk_assign_wizard_views.xml',
         'views/source.xml',
         'views/connection.xml',

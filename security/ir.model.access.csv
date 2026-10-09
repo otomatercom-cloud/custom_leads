@@ -67,3 +67,6 @@ access_re_enquiry_digital_team,re.enquiry.digital_team,model_lead_re_enquiry,cus
 access_re_enquiry_digital_head,re.enquiry.digital_head,model_lead_re_enquiry,custom_leads.group_lead_digital_head,1,1,1,0
 access_re_enquiry_tele_callers,re.enquiry.tele_callers,model_lead_re_enquiry,custom_leads.group_lead_tele_callers,1,0,0,0
 
+access_lead_auto_assign_pool_tl,lead.auto.assign.pool.tl,model_lead_auto_assign_pool,custom_leads.group_lead_team_lead,1,1,1,1
+access_lead_auto_assign_pool_mgr,lead.auto.assign.pool.mgr,model_lead_auto_assign_pool,custom_leads.group_lead_manager,1,1,1,1
+access_lead_auto_assign_pool_sa,lead.auto.assign.pool.sa,model_lead_auto_assign_pool,custom_leads.group_super_admin,1,1,1,1
