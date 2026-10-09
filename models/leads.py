@@ -611,6 +611,66 @@ class LeadsForm(models.Model):
     reassign_date = fields.Datetime(string='Reassign Date', readonly=True)
     assignment_history_ids = fields.One2many('lead.assignment.history', 'lead_id', string='Assignment History',
                                              readonly=True)
+    # ── Response-time (SLA) tracking ──────────────────────────────────────
+    # How long after the lead was created it was first assigned / first called.
+    first_assigned_at = fields.Datetime(string="First Assigned On", compute="_compute_response_delays",
+                                        store=True)
+    first_call_at = fields.Datetime(string="First Called On", compute="_compute_response_delays", store=True)
+    assigned_delay_minutes = fields.Float(string="Assign Delay (min)", compute="_compute_response_delays",
+                                          store=True, group_operator="avg")
+    called_delay_minutes = fields.Float(string="Call Delay (min)", compute="_compute_response_delays",
+                                        store=True, group_operator="avg")
+    assigned_delay_display = fields.Char(string="Assigned After", compute="_compute_delay_display")
+    called_delay_display = fields.Char(string="Called After", compute="_compute_delay_display")
+
+    @api.depends('create_date', 'assignment_history_ids.assigned_date', 'call_log_ids.call_time')
+    def _compute_response_delays(self):
+        real_ids = [rid for rid in self.ids if isinstance(rid, int)]
+        first_assign, first_call = {}, {}
+        if real_ids:
+            self.env['lead.assignment.history'].flush_model()
+            self.env['lead.call.log'].flush_model()
+            cr = self.env.cr
+            cr.execute("SELECT lead_id, MIN(assigned_date) FROM lead_assignment_history "
+                       "WHERE lead_id IN %s AND assigned_date IS NOT NULL GROUP BY lead_id", (tuple(real_ids),))
+            first_assign = dict(cr.fetchall())
+            cr.execute("SELECT lead_id, MIN(call_time) FROM lead_call_log "
+                       "WHERE lead_id IN %s AND call_time IS NOT NULL GROUP BY lead_id", (tuple(real_ids),))
+            first_call = dict(cr.fetchall())
+        for rec in self:
+            rid = rec.id if isinstance(rec.id, int) else None
+            assigned = first_assign.get(rid)
+            called = first_call.get(rid)
+            created = rec.create_date
+            rec.first_assigned_at = assigned or False
+            rec.first_call_at = called or False
+            # negative values (data imported with older history) are clamped to 0
+            rec.assigned_delay_minutes = max((assigned - created).total_seconds() / 60.0, 0.0) \
+                if (assigned and created) else 0.0
+            rec.called_delay_minutes = max((called - created).total_seconds() / 60.0, 0.0) \
+                if (called and created) else 0.0
+
+    @api.depends('first_assigned_at', 'first_call_at', 'assigned_delay_minutes', 'called_delay_minutes')
+    def _compute_delay_display(self):
+        def fmt(minutes):
+            total = int(round(minutes * 60))
+            d, rem = divmod(total, 86400)
+            h, rem = divmod(rem, 3600)
+            m, sec = divmod(rem, 60)
+            parts = []
+            if d:
+                parts.append("%dd" % d)
+            if h:
+                parts.append("%dh" % h)
+            if m:
+                parts.append("%dm" % m)
+            if not parts:
+                parts.append("%ds" % sec)
+            return " ".join(parts)
+        for rec in self:
+            rec.assigned_delay_display = fmt(rec.assigned_delay_minutes) if rec.first_assigned_at else "Not assigned"
+            rec.called_delay_display = fmt(rec.called_delay_minutes) if rec.first_call_at else "Not called yet"
+
     quality_history_ids = fields.One2many('lead.quality.history', 'lead_id', string='Lead Quality History',
                                           readonly=True)
     digital_lead = fields.Boolean(string="Digital Lead")

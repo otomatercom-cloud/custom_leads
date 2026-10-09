@@ -87,6 +87,12 @@
                   decoration-muted="lead_stage_category == 'junk'">
                 <field name="date_of_adding" string="Added Date"/>
                 <field name="create_date" string="Created Date &amp; Time" widget="datetime" optional="show"/>
+                <field name="assigned_delay_display" string="Assigned After" optional="show"/>
+                <field name="called_delay_display" string="Called After" optional="show"/>
+                <field name="first_assigned_at" string="First Assigned On" widget="datetime" optional="hide"/>
+                <field name="first_call_at" string="First Called On" widget="datetime" optional="hide"/>
+                <field name="assigned_delay_minutes" string="Assign Delay (min)" optional="hide" avg="Avg"/>
+                <field name="called_delay_minutes" string="Call Delay (min)" optional="hide" avg="Avg"/>
                 <field name="reference_no"/>
 
                 <field name="name"/>
@@ -1851,6 +1857,11 @@
                             <group>
                                 <group string="Lifecycle Dates">
                                     <field name="date_of_adding"/>
+                                    <field name="create_date" string="Created Date &amp; Time" widget="datetime"/>
+                                    <field name="first_assigned_at" widget="datetime"/>
+                                    <field name="assigned_delay_display"/>
+                                    <field name="first_call_at" widget="datetime"/>
+                                    <field name="called_delay_display"/>
                                     <field name="assigned_date"/>
                                     <field name="reassign_date"/>
                                     <field name="re_allocation_date"/>
@@ -2072,6 +2083,11 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('date_of_adding', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('date_of_adding', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
+                <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
+                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_minutes', '&gt;', 60)]"/>
+                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_minutes', '&gt;', 60)]"/>
+                <separator/>
                 <filter string="Created: Last 24 Hours" name="created_last_24h"
                         domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
                 <filter string="Created: Last 30 Days" name="created_last_30d"
@@ -2103,6 +2119,11 @@
                 <filter string="Current Week" name="current_week"
                         domain="[('admission_date', '&lt;=', ((context_today()+relativedelta(weeks=0, weekday=-1)).strftime('%Y-%m-%d'))),('admission_date', '&gt;=', ((context_today()-relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d')))]"/>
 
+                <filter string="Not Assigned Yet" name="not_assigned_yet" domain="[('first_assigned_at', '=', False)]"/>
+                <filter string="Not Called Yet" name="not_called_yet" domain="[('first_call_at', '=', False)]"/>
+                <filter string="Called after 1 hour+" name="call_delay_1h" domain="[('called_delay_minutes', '&gt;', 60)]"/>
+                <filter string="Assigned after 1 hour+" name="assign_delay_1h" domain="[('assigned_delay_minutes', '&gt;', 60)]"/>
+                <separator/>
                 <filter string="Created: Last 24 Hours" name="created_last_24h"
                         domain="[('create_date', '&gt;=', (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'))]"/>
                 <filter string="Created: Last 30 Days" name="created_last_30d"
